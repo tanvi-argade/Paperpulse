@@ -1,0 +1,213 @@
+.pp-adminAssignments {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px 18px 36px;
+  color: #0f172a;
+  animation: ppAdminAssignmentsFadeIn 260ms ease both;
+}
+
+.pp-adminAssignments__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 2px 14px;
+}
+
+.pp-adminAssignments__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.pp-adminAssignments__subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 650;
+  color: rgba(51, 65, 85, 0.9);
+}
+
+.pp-adminAssignments__filters {
+  display: flex;
+  justify-content: flex-end;
+  width: min(520px, 100%);
+}
+
+.pp-adminAssignments__search {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: #ffffff;
+  outline: none;
+  font-size: 14px;
+  font-weight: 650;
+  color: #0f172a;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.pp-adminAssignments__search::placeholder {
+  color: rgba(51, 65, 85, 0.62);
+}
+
+.pp-adminAssignments__search:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.pp-adminAssignmentsTable {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.pp-adminAssignmentsTable.is-ready {
+  animation: ppAdminAssignmentsTableIn 260ms ease both;
+}
+
+.pp-adminAssignmentsTable__state {
+  padding: 18px;
+  font-size: 14px;
+  font-weight: 750;
+  color: rgba(51, 65, 85, 0.9);
+}
+
+.pp-adminAssignmentsTable__wrap {
+  width: 100%;
+}
+
+.pp-adminAssignmentsTable__row {
+  display: grid;
+  grid-template-columns: 2.2fr 1.5fr 1.5fr 1.2fr;
+  gap: 12px;
+  padding: 12px 14px;
+  align-items: center;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  transition: background 140ms ease;
+}
+
+.pp-adminAssignmentsTable__row--head {
+  border-top: none;
+  background: rgba(2, 6, 23, 0.03);
+}
+
+.pp-adminAssignmentsTable__row:not(.pp-adminAssignmentsTable__row--head):hover {
+  background: rgba(2, 6, 23, 0.02);
+}
+
+.pp-adminAssignmentsTable__cell {
+  min-width: 0;
+}
+
+.pp-adminAssignmentsTable__cell--head {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: rgba(51, 65, 85, 0.9);
+  text-transform: uppercase;
+}
+
+.pp-adminAssignmentsTable__paperTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-adminAssignmentsTable__badge {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 850;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: rgba(148, 163, 184, 0.16);
+  border-color: rgba(148, 163, 184, 0.20);
+  color: #334155;
+  width: fit-content;
+}
+
+.pp-adminAssignmentsTable__name {
+  font-size: 13px;
+  font-weight: 850;
+  color: rgba(15, 23, 42, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-adminAssignmentsTable__email {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 650;
+  color: rgba(51, 65, 85, 0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-adminAssignmentsTable__date {
+  font-size: 13px;
+  font-weight: 750;
+  color: rgba(51, 65, 85, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 960px) {
+  .pp-adminAssignmentsTable__row {
+    grid-template-columns: 2fr 1.4fr 1.4fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .pp-adminAssignments__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pp-adminAssignments__filters {
+    width: 100%;
+  }
+
+  .pp-adminAssignmentsTable__row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .pp-adminAssignmentsTable__date {
+    white-space: normal;
+  }
+}
+
+@keyframes ppAdminAssignmentsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@keyframes ppAdminAssignmentsTableIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+

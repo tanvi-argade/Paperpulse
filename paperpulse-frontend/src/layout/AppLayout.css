@@ -1,0 +1,11 @@
+.pp-layout {
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.pp-layout__main {
+  width: 100%;
+  padding: 18px 0 32px;
+}
+

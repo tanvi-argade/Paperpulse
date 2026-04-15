@@ -1,0 +1,306 @@
+.pp-adminPapers {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 20px 18px 36px;
+  color: #0f172a;
+  animation: ppAdminPapersFadeIn 260ms ease both;
+}
+
+.pp-adminPapers__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 2px 14px;
+}
+
+.pp-adminPapers__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.pp-adminPapers__subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 650;
+  color: rgba(51, 65, 85, 0.9);
+}
+
+.pp-adminPapers__filters {
+  display: flex;
+  justify-content: flex-end;
+  width: min(760px, 100%);
+  gap: 12px;
+}
+
+.pp-adminPapers__search {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: #ffffff;
+  outline: none;
+  font-size: 14px;
+  font-weight: 650;
+  color: #0f172a;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.pp-adminPapers__search::placeholder {
+  color: rgba(51, 65, 85, 0.62);
+}
+
+.pp-adminPapers__search:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.pp-adminPapers__select {
+  width: 200px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: #ffffff;
+  outline: none;
+  font-size: 14px;
+  font-weight: 650;
+  color: #0f172a;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+  cursor: pointer;
+}
+
+.pp-adminPapers__select:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.pp-adminPapersTable {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.pp-adminPapersTable.is-ready {
+  animation: ppAdminPapersTableIn 260ms ease both;
+}
+
+.pp-adminPapersTable__state {
+  padding: 18px;
+  font-size: 14px;
+  font-weight: 750;
+  color: rgba(51, 65, 85, 0.9);
+}
+
+.pp-adminPapersTable__wrap {
+  width: 100%;
+}
+
+.pp-adminPapersTable__row {
+  display: grid;
+  grid-template-columns: 2.2fr 1.6fr 1fr 1.4fr 0.9fr;
+  gap: 12px;
+  padding: 12px 14px;
+  align-items: center;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  transition: background 140ms ease;
+}
+
+.pp-adminPapersTable__row--head {
+  border-top: none;
+  background: rgba(2, 6, 23, 0.03);
+}
+
+.pp-adminPapersTable__row:not(.pp-adminPapersTable__row--head):hover {
+  background: rgba(2, 6, 23, 0.02);
+}
+
+.pp-adminPapersTable__cell {
+  min-width: 0;
+}
+
+.pp-adminPapersTable__cell--head {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: rgba(51, 65, 85, 0.9);
+  text-transform: uppercase;
+}
+
+.pp-adminPapersTable__cell--right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pp-adminPapersTable__title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-adminPapersTable__authorName {
+  font-size: 13px;
+  font-weight: 850;
+  color: rgba(15, 23, 42, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-adminPapersTable__authorEmail {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 650;
+  color: rgba(51, 65, 85, 0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-adminPapersTable__keywords {
+  font-size: 12px;
+  font-weight: 650;
+  color: rgba(51, 65, 85, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-paperStatus {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.pp-paperStatus--submitted {
+  background: rgba(148, 163, 184, 0.16);
+  border-color: rgba(148, 163, 184, 0.20);
+  color: #334155;
+}
+
+.pp-paperStatus--underReview {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.22);
+  color: #92400e;
+}
+
+.pp-paperStatus--accepted {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.22);
+  color: #166534;
+}
+
+.pp-paperStatus--rejected {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.22);
+  color: #991b1b;
+}
+
+.pp-adminPapersAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(2, 6, 23, 0.02);
+  color: rgba(15, 23, 42, 0.92);
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, border-color 140ms ease;
+  white-space: nowrap;
+}
+
+.pp-adminPapersAction:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.10);
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.25);
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.pp-adminPapersAction.is-disabled,
+.pp-adminPapersAction.is-disabled:hover {
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.6;
+  border-color: rgba(15, 23, 42, 0.10);
+  background: rgba(148, 163, 184, 0.10);
+}
+
+@media (max-width: 980px) {
+  .pp-adminPapersTable__row {
+    grid-template-columns: 2fr 1.6fr 1fr 1.2fr;
+  }
+
+  .pp-adminPapersTable__cell--right {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .pp-adminPapers__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pp-adminPapers__filters {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .pp-adminPapers__select {
+    width: 100%;
+  }
+
+  .pp-adminPapersTable__row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .pp-adminPapersTable__cell--right {
+    justify-content: flex-start;
+  }
+}
+
+@keyframes ppAdminPapersFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@keyframes ppAdminPapersTableIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+

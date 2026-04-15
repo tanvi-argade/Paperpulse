@@ -1,0 +1,24 @@
+.pp-adminShell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: #f8fafc;
+}
+
+.pp-adminShell__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-adminShell__container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 18px 36px;
+}
+
+@media (max-width: 760px) {
+  .pp-adminShell {
+    flex-direction: column;
+  }
+}
+

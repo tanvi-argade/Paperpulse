@@ -1,0 +1,246 @@
+.pp-submitPaper {
+  min-height: calc(100vh - 60px);
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 28px 16px 40px;
+  color: #0f172a;
+  animation: ppFadeIn 320ms ease both;
+}
+
+.pp-submitPaper__bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(900px 420px at 20% 10%, rgba(37, 99, 235, 0.12), transparent 60%),
+    radial-gradient(900px 420px at 80% 0%, rgba(34, 197, 94, 0.10), transparent 55%),
+    linear-gradient(180deg, rgba(248, 250, 252, 1), rgba(241, 245, 249, 1));
+  pointer-events: none;
+}
+
+.pp-submitPaper__card {
+  width: min(700px, 100%);
+  position: relative;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 18px 55px rgba(15, 23, 42, 0.10);
+  backdrop-filter: blur(10px);
+}
+
+.pp-submitPaper__header {
+  padding: 4px 2px 12px;
+}
+
+.pp-submitPaper__kicker {
+  font-size: 12px;
+  font-weight: 850;
+  color: rgba(51, 65, 85, 0.88);
+}
+
+.pp-submitPaper__title {
+  margin: 6px 0 0;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.pp-submitPaper__subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 650;
+  color: rgba(51, 65, 85, 0.9);
+}
+
+.pp-submitPaper__alert {
+  margin: 14px 2px 4px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  font-weight: 750;
+  font-size: 13px;
+  animation: ppAlertIn 220ms ease both;
+}
+
+.pp-submitPaper__alert.is-success {
+  background: rgba(34, 197, 94, 0.10);
+  border-color: rgba(34, 197, 94, 0.20);
+  color: #14532d;
+}
+
+.pp-submitPaper__alert.is-error {
+  background: rgba(239, 68, 68, 0.10);
+  border-color: rgba(239, 68, 68, 0.22);
+  color: #7f1d1d;
+}
+
+.pp-submitPaper__form {
+  margin-top: 14px;
+  display: grid;
+  gap: 16px;
+}
+
+.pp-submitPaper__section {
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  background: rgba(248, 250, 252, 0.70);
+  border-radius: 18px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.pp-submitPaper__sectionTitle {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: rgba(15, 23, 42, 0.88);
+}
+
+.pp-submitPaper__field {
+  display: grid;
+  gap: 7px;
+}
+
+.pp-submitPaper__label {
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(51, 65, 85, 0.92);
+}
+
+.pp-submitPaper__input,
+.pp-submitPaper__textarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  padding: 11px 12px;
+  outline: none;
+  font-size: 14px;
+  font-weight: 650;
+  color: #0f172a;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.pp-submitPaper__textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.pp-submitPaper__input::placeholder,
+.pp-submitPaper__textarea::placeholder {
+  color: rgba(51, 65, 85, 0.62);
+}
+
+.pp-submitPaper__input:focus,
+.pp-submitPaper__textarea:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.pp-submitPaper__fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pp-submitPaper__dropzone {
+  text-align: left;
+  width: 100%;
+  border-radius: 18px;
+  padding: 16px;
+  border: 1.5px dashed rgba(15, 23, 42, 0.22);
+  background: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.pp-submitPaper__dropzone:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.10);
+  border-color: rgba(37, 99, 235, 0.35);
+}
+
+.pp-submitPaper__dropzone.is-dragOver {
+  border-color: rgba(37, 99, 235, 0.55);
+  background: rgba(37, 99, 235, 0.05);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.pp-submitPaper__dropTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+.pp-submitPaper__dropHint {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 650;
+  color: rgba(51, 65, 85, 0.90);
+}
+
+.pp-submitPaper__fileName {
+  font-weight: 900;
+  color: #1d4ed8;
+}
+
+.pp-submitPaper__submit {
+  width: 100%;
+  border-radius: 16px;
+  padding: 12px 14px;
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.pp-submitPaper__submit:hover {
+  transform: translateY(-1px) scale(1.01);
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  box-shadow: 0 22px 50px rgba(37, 99, 235, 0.24);
+}
+
+.pp-submitPaper__submit:active {
+  transform: translateY(0px) scale(0.995);
+}
+
+.pp-submitPaper__submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+@keyframes ppFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@keyframes ppAlertIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+

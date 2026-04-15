@@ -1,0 +1,77 @@
+.pp-adminSidebar {
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  padding: 18px 14px;
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 0px);
+}
+
+.pp-adminSidebar__brand {
+  padding: 10px 10px 14px;
+  margin-bottom: 12px;
+}
+
+.pp-adminSidebar__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.pp-adminSidebar__subtitle {
+  font-size: 12px;
+  color: rgba(51, 65, 85, 0.9);
+  margin-top: 2px;
+}
+
+.pp-adminSidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pp-adminSidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: rgba(51, 65, 85, 0.95);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.pp-adminSidebar__link:hover {
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+}
+
+.pp-adminSidebar__link.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.pp-adminSidebar__icon {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+  .pp-adminSidebar {
+    width: 220px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pp-adminSidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  }
+}
+

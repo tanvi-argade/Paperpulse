@@ -1,0 +1,85 @@
+.pp-adminHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 4px 14px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  margin-bottom: 18px;
+}
+
+.pp-adminHeader__kicker {
+  font-size: 12px;
+  font-weight: 650;
+  color: rgba(51, 65, 85, 0.9);
+}
+
+.pp-adminHeader__title {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin-top: 3px;
+}
+
+.pp-adminHeader__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pp-adminHeader__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.pp-adminHeader__btnArrow {
+  opacity: 0.7;
+}
+
+.pp-adminHeader__btn--ghost {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.pp-adminHeader__btn--ghost:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.18);
+}
+
+.pp-adminHeader__btn--primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.pp-adminHeader__btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.22);
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+@media (max-width: 820px) {
+  .pp-adminHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pp-adminHeader__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+

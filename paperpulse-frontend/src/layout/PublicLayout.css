@@ -1,0 +1,10 @@
+.pp-public {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.pp-public__main {
+  width: 100%;
+}
+
