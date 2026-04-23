@@ -22,31 +22,27 @@ export default function AdminOverview() {
     const load = async () => {
       try {
         setLoading(true);
+
         const all = await getPapers();
         if (!mounted) return;
-        setPapers(Array.isArray(all) ? all : []);
 
-        const underReview = (Array.isArray(all) ? all : []).filter(
-          (p) => isUnderReview(normalizeStatus(p.status))
-        );
+        const papersList = Array.isArray(all) ? all : [];
+        setPapers(papersList);
 
-        // "Requires Decision" = under_review papers that already have at least 1 review.
-        // Uses existing admin endpoints only (no backend changes).
-        const checks = await Promise.all(
-          underReview.map(async (p) => {
-            const reviews = await getPaperReviews(p.id);
-            return Array.isArray(reviews) && reviews.length > 0;
-          })
-        );
+        // ❌ REMOVED N+1 REVIEW CALLS
+        // Instead derive "requires decision" from paper status only
+        const requiresDecision = papersList.filter(
+          (p) => normalizeStatus(p.status) === "under_review"
+        ).length;
 
-        if (!mounted) return;
-        setRequiresDecisionCount(checks.filter(Boolean).length);
+        setRequiresDecisionCount(requiresDecision);
       } finally {
         if (mounted) setLoading(false);
       }
     };
 
     load();
+
     return () => {
       mounted = false;
     };

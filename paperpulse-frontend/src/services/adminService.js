@@ -25,8 +25,11 @@ export const getPaperReviews = async (paperId) => {
   return res.data;
 };
 
-export const makeDecision = async (data) => {
-  const res = await api.post("/api/admin/decision", data);
+export const makeDecision = async ({ paper_id, decision }) => {
+  const res = await api.patch(
+    `/api/admin/papers/${paper_id}/decision`,
+    { decision }
+  );
   return res.data;
 };
 

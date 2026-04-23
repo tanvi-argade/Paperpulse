@@ -1,21 +1,22 @@
 import { Navigate } from "react-router-dom";
-import { getRole, getToken } from "../utils/auth";
+import { getToken, getUser } from "../utils/auth";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = getToken();
-  const role = getRole();
+  const user = getUser();
 
   // 1. Not logged in
-  if (!token) {
+  if (!token || !user) {
     return <Navigate to="/login" />;
   }
+
+  const role = user.role;
 
   // 2. Role not allowed
   if (allowedRoles && !allowedRoles.includes(role)) {
     return <Navigate to="/login" />;
   }
 
-  // 3. Allowed
   return children;
 };
 

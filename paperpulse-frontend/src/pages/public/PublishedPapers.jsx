@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAcceptedPapers } from "../../services/paperService";
+import { getPublishedPapers } from "../../services/paperService";
 
 const BASE_URL = "http://localhost:5000";
 
@@ -7,7 +7,7 @@ export default function AcceptedPapers() {
   const [papers, setPapers] = useState([]);
 
   useEffect(() => {
-    getAcceptedPapers().then(setPapers);
+    getPublishedPapers().then(setPapers);
   }, []);
 
   // 🔥 SAFE URL BUILDER
@@ -25,10 +25,10 @@ export default function AcceptedPapers() {
 
   return (
     <div>
-      <h2>Accepted Papers</h2>
+      <h2>Published Papers</h2>
 
       {papers.length === 0 ? (
-        <p>No accepted papers yet</p>
+        <p>No Published papers yet</p>
       ) : (
         papers.map((p) => {
           const pdfUrl = buildPdfUrl(p.pdf_url);

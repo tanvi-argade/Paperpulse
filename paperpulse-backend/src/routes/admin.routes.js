@@ -16,11 +16,18 @@ router.post(
   assignmentController.assignReviewer
 );
 
-router.post(
-  "/decision",
+router.patch(
+  "/papers/:paperId/decision",
   auth,
   role("admin"),
   decisionController.makeDecision
+);
+
+router.patch(
+  "/papers/:paperId/publish",
+  auth,
+  role("admin"),
+  decisionController.publishPaper
 );
 
 // NEW READ APIs

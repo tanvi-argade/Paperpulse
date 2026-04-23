@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ProtectedRoute from "./ProtectedRoute";
-import AcceptedPapers from "../pages/public/AcceptedPapers";
+import PublishedPapers from "../pages/public/PublishedPapers";
 import Home from "../pages/public/Home";
 import PublicLayout from "../layout/PublicLayout";
 import AppLayout from "../layout/AppLayout";
@@ -34,7 +34,7 @@ const AppRouter = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/papers" element={<AcceptedPapers />} />
+          <Route path="/papers" element={<PublishedPapers />} />
         </Route>
 
         {/* PROTECTED APP */}

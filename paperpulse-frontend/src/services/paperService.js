@@ -1,6 +1,6 @@
 import api from "../api/axios";
 
-export const getAcceptedPapers = async () => {
-  const res = await api.get("/api/papers/accepted");
+export const getPublishedPapers = async () => {
+  const res = await api.get("/api/papers/published");
   return res.data;
 };

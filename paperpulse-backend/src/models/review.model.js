@@ -42,7 +42,7 @@ const isAssignedReviewer = async (paper_id, reviewer_id) => {
 // Get paper (for notifications)
 const getPaperById = async (paper_id) => {
   const result = await pool.query(
-    "SELECT id, author_id FROM papers WHERE id = $1",
+    "SELECT id, author_id, status FROM papers WHERE id = $1",
     [paper_id]
   );
   return result.rows[0];

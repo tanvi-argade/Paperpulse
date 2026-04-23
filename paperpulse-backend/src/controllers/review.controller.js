@@ -1,6 +1,8 @@
 const reviewModel = require("../models/review.model");
 const notificationModel = require("../models/notification.model");
 const auditModel = require("../models/audit.model");
+const AUDIT = require("../utils/auditActions");
+const PAPER_STATUS = require("../utils/paperStatus");
 
 // GET assigned papers
 const getMyPapers = async (req, res) => {
@@ -69,19 +71,24 @@ const submitReview = async (req, res) => {
     );
 
     // 6. Move to under_review
-    await reviewModel.updatePaperStatus(paper_id, "under_review");
+    // 6. SAFE status transition
+    const currentStatus = paper.status;
 
+    // Only allow transition if paper is in submitted state
+    if (currentStatus === PAPER_STATUS.SUBMITTED) {
+      await reviewModel.updatePaperStatus(paper_id, PAPER_STATUS.UNDER_REVIEW);
+    }
     // 7. 🔔 Notify author
     await notificationModel.createNotification(
       paper.author_id,
-      "review_submitted",
+      AUDIT.REVIEW_SUBMITTED,
       "Your paper has been reviewed"
     );
-    
+
     // 🔥 AUDIT LOG (CORRECT PLACE)
     await auditModel.logAction(
       paper_id,
-      "review_submitted",
+      AUDIT.REVIEW_SUBMITTED,
       req.user.id,
       { recommendation, comments }
     );

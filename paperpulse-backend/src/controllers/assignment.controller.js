@@ -1,5 +1,7 @@
 const assignmentModel = require("../models/assignment.model");
 const auditModel = require("../models/audit.model");
+const AUDIT = require("../utils/auditActions");
+const PAPER_STATUS = require("../utils/paperStatus");
 
 const assignReviewer = async (req, res) => {
   try {
@@ -31,7 +33,7 @@ const assignReviewer = async (req, res) => {
       });
     }
 
-    if (["accepted", "rejected"].includes(paper.status)) {
+    if ([PAPER_STATUS.ACCEPTED, PAPER_STATUS.REJECTED].includes(paper.status)) {
       return res.status(400).json({
         message: "Cannot assign reviewer. Paper already finalized"
       });
@@ -50,16 +52,10 @@ const assignReviewer = async (req, res) => {
 
     const assignment = await assignmentModel.assignReviewerTx(
       paper,
-      reviewer_id
+      reviewer_id,
+      req.user.id
     );
 
-    // 🔥 AUDIT LOG
-    await auditModel.logAction(
-      paper_id,
-      "reviewer_assigned",
-      req.user.id,
-      { reviewer_id }
-    );
 
     res.status(201).json({
       message: "Reviewer assigned successfully",

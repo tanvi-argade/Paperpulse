@@ -32,10 +32,16 @@ router.get(
   paperController.getPaperStats
 );
 
-// 🔥 PUBLIC accepted papers
+router.get("/accepted", (req, res) => {
+  return res.status(410).json({
+    message: "Endpoint deprecated. Use /published"
+  });
+});
+
+// 🔥 PUBLIC published papers
 router.get(
-  "/accepted",
-  paperController.getAcceptedPapers
+  "/published",
+  paperController.getPublishedPapers
 );
 
 router.get(

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import AcceptedPapers from "./AcceptedPapers";
+import PublishedPapers from "./PublishedPapers";
 
 export default function Home() {
   const scrollToPapers = () => {
@@ -153,7 +153,7 @@ export default function Home() {
 
             <div style={styles.papersCard} className="pp-card">
               <div className="pp-recent-papers">
-                <AcceptedPapers />
+                <PublishedPapers />
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
 import {
   BadgeCheck,
@@ -87,32 +87,59 @@ const AuthorDashboard = () => {
     }
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const res = await api.get("/api/notifications");
-      setNotifications(Array.isArray(res.data) ? res.data : []);
+      const nextNotifications = Array.isArray(res.data) ? res.data : [];
+      console.log("[Notifications] GET /api/notifications response:", res.data);
+      setNotifications((prev) => {
+        console.log("[Notifications] fetchNotifications - state BEFORE update:", prev);
+        console.log(
+          "[Notifications] fetchNotifications - is_read diagnostics:",
+          nextNotifications.map((item) => ({
+            id: item.id,
+            hasIsRead: Object.prototype.hasOwnProperty.call(item, "is_read"),
+            isReadValue: item.is_read,
+            isReadType: typeof item.is_read,
+          }))
+        );
+        console.log("[Notifications] UPDATED STATE:", nextNotifications);
+        return nextNotifications;
+      });
     } catch (err) {
       console.log(err.response?.data || err.message);
       setNotifications([]);
     }
-  };
+  }, []);
 
   const markNotificationsAsRead = async () => {
     try {
-      await api.patch("/api/notifications/read");
-      setNotifications((prev) =>
-        prev.map((item) => ({ ...item, is_read: true }))
-      );
+      console.log("[Notifications] markNotificationsAsRead - state BEFORE update:", notifications);
+      const cutoff = notifications[0]?.created_at || new Date().toISOString();
+      const res = await api.patch("/api/notifications/read", { cutoff });
+      console.log("[Notifications] PATCH /api/notifications/read response:", res.data);
+      console.log("[Notifications] markNotificationsAsRead - state AFTER patch before refetch:", notifications);
+      await fetchNotifications();
     } catch (err) {
       console.log(err.response?.data || err.message);
     }
   };
 
+  // initial load
   useEffect(() => {
     fetchPapers();
     fetchStats();
     fetchNotifications();
-  }, []);
+  }, [fetchNotifications]);
+
+  // 🔥 ADD HERE (focus sync)
+  useEffect(() => {
+    const onFocus = () => fetchNotifications();
+
+    window.addEventListener("focus", onFocus);
+
+    return () => window.removeEventListener("focus", onFocus);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -125,6 +152,10 @@ const AuthorDashboard = () => {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
+
+  useEffect(() => {
+    console.log("[Notifications] notifications state AFTER update:", notifications);
+  }, [notifications]);
 
   const normalizeStatus = (value) => String(value || "").trim().toLowerCase();
   const statusMeta = (status) => {
@@ -186,10 +217,15 @@ const AuthorDashboard = () => {
   });
 
   const handleNotificationToggle = async () => {
-    if (!showDropdown) {
+    const next = !showDropdown;
+    console.log("[Notifications] Bell toggle clicked. Opening:", next);
+    console.log("[Notifications] handleNotificationToggle - state BEFORE update:", notifications);
+    setShowDropdown(next);
+
+    if (next) {
       await markNotificationsAsRead();
     }
-    setShowDropdown((prev) => !prev);
+    console.log("[Notifications] handleNotificationToggle - state AFTER update:", notifications);
   };
 
   return (
@@ -255,7 +291,12 @@ const AuthorDashboard = () => {
                 zIndex: 20,
               }}
             >
-              <Notifications notifications={notifications} />
+              <Notifications
+                notifications={notifications}
+                onViewAllClick={() => {
+                  console.log("[Notifications] View All clicked");
+                }}
+              />
             </div>
           )}
         </div>
@@ -371,6 +412,11 @@ const AuthorDashboard = () => {
                     <div className="pp-paperCard__top">
                       <div className="pp-paperCard__title">{paper.title}</div>
                       <span className={`pp-badge pp-badge--${meta.tone}`}>{meta.label}</span>
+                    </div>
+                    <div className="pp-keywords">
+                      {pills.map((k, i) => (
+                        <span key={i} className="pp-pill">{k}</span>
+                      ))}
                     </div>
 
                     {meta.hint && (

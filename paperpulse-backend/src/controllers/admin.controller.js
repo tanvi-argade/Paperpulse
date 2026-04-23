@@ -9,8 +9,13 @@ exports.getUsers = async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch users" });
-  }
+    res.status(500).json({
+      error: {
+        code: "FETCH_FAILED",
+        message: "Failed to fetch users"
+      }
+    });
+    }
 };
 
 // 🔥 UPDATE ROLE (SAFE VERSION)
@@ -22,7 +27,12 @@ exports.updateUserRole = async (req, res) => {
     // 1. Validate role
     const allowedRoles = ["author", "reviewer"];
     if (!allowedRoles.includes(role)) {
-      return res.status(400).json({ message: "Invalid role" });
+      res.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid role"
+        }
+      });
     }
 
     // 2. Check user exists
@@ -32,7 +42,12 @@ exports.updateUserRole = async (req, res) => {
     );
 
     if (userCheck.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        error: {
+          code: "NOT_FOUND",
+          message: "User not found"
+        }
+      });
     }
 
     const currentUser = userCheck.rows[0];
@@ -40,7 +55,10 @@ exports.updateUserRole = async (req, res) => {
     // 3. 🔥 PROTECT ADMIN
     if (currentUser.role === "admin") {
       return res.status(403).json({
-        message: "Cannot modify admin role",
+        error: {
+          code: "FORBIDDEN",
+          message: "Cannot modify admin role"
+        }
       });
     }
 
@@ -63,7 +81,12 @@ exports.updateUserRole = async (req, res) => {
     });
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      error: {
+        code: "INTERNAL_ERROR",
+        message: error.message
+      }
+    });
   }
 };
 
@@ -89,7 +112,12 @@ exports.getPapers = async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch papers" });
+    res.status(500).json({
+      error: {
+        code: "FETCH_FAILED",
+        message: "Failed to fetch Papers"
+      }
+    });
   }
 };
 
@@ -114,7 +142,12 @@ exports.getAssignments = async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch assignments" });
+    res.status(500).json({
+      error: {
+        code: "FETCH_FAILED",
+        message: "Failed to fetch Assignments"
+      }
+    });
   }
 };
 
@@ -139,6 +172,11 @@ exports.getPaperReviews = async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch reviews" });
+    res.status(500).json({
+      error: {
+        code: "FETCH_FAILED",
+        message: "Failed to fetch reviews"
+      }
+    });
   }
 };

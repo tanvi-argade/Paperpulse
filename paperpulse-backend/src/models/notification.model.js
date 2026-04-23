@@ -21,17 +21,19 @@ const getNotificationsByUser = async (user_id) => {
   return result.rows;
 };
 
-const markAllNotificationsAsRead = async (user_id) => {
+const markNotificationsAsReadUntil = async (user_id, cutoff) => {
   await pool.query(
     `UPDATE notifications
      SET is_read = true
-     WHERE user_id = $1 AND is_read = false;`,
-    [user_id]
+     WHERE user_id = $1 
+       AND is_read = false
+       AND created_at <= $2`,
+    [user_id, cutoff]
   );
 };
 
 module.exports = {
   createNotification,
   getNotificationsByUser,
-  markAllNotificationsAsRead
+  markNotificationsAsReadUntil
 };

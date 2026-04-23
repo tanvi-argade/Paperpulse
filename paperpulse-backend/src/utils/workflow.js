@@ -1,8 +1,11 @@
+const PAPER_STATUS = require("./paperStatus");
+
 const transitions = {
-  submitted: ["under_review"],
-  under_review: ["accepted", "rejected"],
-  accepted: [],
-  rejected: []
+  [PAPER_STATUS.SUBMITTED]: [PAPER_STATUS.UNDER_REVIEW],
+  [PAPER_STATUS.UNDER_REVIEW]: [PAPER_STATUS.ACCEPTED, PAPER_STATUS.REJECTED],
+  [PAPER_STATUS.ACCEPTED]: [PAPER_STATUS.PUBLISHED],
+  [PAPER_STATUS.REJECTED]: [],
+  [PAPER_STATUS.PUBLISHED]: []
 };
 
 const canTransition = (from, to) => {

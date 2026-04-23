@@ -3,34 +3,46 @@ const notificationModel = require("../models/notification.model");
 const auditModel = require("../models/audit.model");
 const reviewModel = require("../models/review.model");
 const { canTransition } = require("../utils/workflow");
+const AUDIT = require("../utils/auditActions");
+const PAPER_STATUS = require("../utils/paperStatus");
 
+// =====================
+// MAKE DECISION
+// =====================
 const makeDecision = async (req, res) => {
   try {
-    const { paper_id, decision } = req.body;
+    const { paperId } = req.params;
+    const { decision } = req.body;
 
-    // 1. Basic validation
-    if (!paper_id || !decision) {
+    if (!paperId || !decision) {
       return res.status(400).json({
-        message: "paper_id and decision required"
+        message: "paperId and decision required"
       });
     }
 
-    const validDecisions = ["accepted", "rejected"];
+    const validDecisions = [PAPER_STATUS.ACCEPTED, PAPER_STATUS.REJECTED];
     if (!validDecisions.includes(decision)) {
       return res.status(400).json({
         message: "Invalid decision"
       });
     }
 
-    // 2. Fetch paper
-    const paper = await decisionModel.getPaper(paper_id);
+    const paper = await decisionModel.getPaper(paperId);
 
     if (!paper) {
       return res.status(404).json({ message: "Paper not found" });
     }
 
-    // 🔥 3. CHECK REVIEWS EXIST (ADD HERE)
-    const reviews = await reviewModel.getReviewsByPaper(paper_id);
+    if (
+      paper.status === PAPER_STATUS.ACCEPTED ||
+      paper.status === PAPER_STATUS.REJECTED
+    ) {
+      return res.status(400).json({
+        message: "Decision already finalized"
+      });
+    }
+
+    const reviews = await reviewModel.getReviewsByPaper(paperId);
 
     if (!reviews || reviews.length === 0) {
       return res.status(400).json({
@@ -38,27 +50,23 @@ const makeDecision = async (req, res) => {
       });
     }
 
-    // 4. Workflow transition check
     if (!canTransition(paper.status, decision)) {
       return res.status(400).json({
         message: `Invalid transition: ${paper.status} → ${decision}`
       });
     }
 
-    // 5. Update decision
-    await decisionModel.updateDecision(paper_id, decision);
+    await decisionModel.updateDecision(paperId, decision);
 
-    // 6. Notify author
     await notificationModel.createNotification(
       paper.author_id,
       "decision_made",
       `Your paper is ${decision}`
     );
 
-    // 7. Audit log
     await auditModel.logAction(
-      paper_id,
-      "final_decision",
+      paperId,
+      AUDIT.FINAL_DECISION,
       req.user.id,
       { decision }
     );
@@ -72,4 +80,62 @@ const makeDecision = async (req, res) => {
   }
 };
 
-module.exports = { makeDecision };
+// =====================
+// PUBLISH PAPER
+// =====================
+const publishPaper = async (req, res) => {
+  try {
+    const { paperId } = req.params;
+
+    if (!paperId) {
+      return res.status(400).json({
+        message: "paperId required"
+      });
+    }
+
+    const paper = await decisionModel.getPaper(paperId);
+
+    if (!paper) {
+      return res.status(404).json({ message: "Paper not found" });
+    }
+
+    if (paper.status === PAPER_STATUS.PUBLISHED) {
+      return res.status(400).json({
+        message: "Paper already published"
+      });
+    }
+
+    if (!canTransition(paper.status, PAPER_STATUS.PUBLISHED)) {
+      return res.status(400).json({
+        message: `Invalid transition: ${paper.status} → ${PAPER_STATUS.PUBLISHED}`
+      });
+    }
+
+    await decisionModel.updateDecision(paperId, PAPER_STATUS.PUBLISHED);
+
+    await notificationModel.createNotification(
+      paper.author_id,
+      AUDIT.PAPER_PUBLISHED,
+      "Your paper has been published"
+    );
+
+    await auditModel.logAction(
+      paperId,
+      AUDIT.PAPER_PUBLISHED,
+      req.user.id,
+      {}
+    );
+
+    res.json({
+      message: "Paper published successfully"
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  makeDecision,
+  publishPaper
+};

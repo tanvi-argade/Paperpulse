@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { getRole, getToken, logout } from "../utils/auth";
+import { getToken, getUser, logout } from "../utils/auth";
 
 export const AuthContext = createContext();
 
@@ -8,17 +8,20 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = getToken();
-    const role = getRole();
+    const storedUser = getUser();
 
-    if (token && role) {
-      setUser({ token, role });
+    if (token && storedUser) {
+      setUser({
+        token,
+        ...storedUser
+      });
     }
   }, []);
 
   const login = (data) => {
     setUser({
       token: data.token,
-      role: data.user.role,
+      ...data.user
     });
   };
 
