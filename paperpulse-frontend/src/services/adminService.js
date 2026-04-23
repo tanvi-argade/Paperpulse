@@ -39,3 +39,7 @@ export const updateUserRole = async (userId, role) => {
   });
   return res.data;
 };
+
+export const publishPaper = (id) => api.patch(`/api/admin/papers/${id}/publish`);
+
+export const unpublishPaper = (id) => api.patch(`/api/admin/papers/${id}/unpublish`);

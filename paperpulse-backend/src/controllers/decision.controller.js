@@ -1,3 +1,4 @@
+const pool = require("../config/db");
 const decisionModel = require("../models/decision.model");
 const notificationModel = require("../models/notification.model");
 const auditModel = require("../models/audit.model");
@@ -99,19 +100,16 @@ const publishPaper = async (req, res) => {
       return res.status(404).json({ message: "Paper not found" });
     }
 
-    if (paper.status === PAPER_STATUS.PUBLISHED) {
+    if (paper.status !== PAPER_STATUS.ACCEPTED) {
       return res.status(400).json({
-        message: "Paper already published"
+        message: "Only 'accepted' papers can be published"
       });
     }
 
-    if (!canTransition(paper.status, PAPER_STATUS.PUBLISHED)) {
-      return res.status(400).json({
-        message: `Invalid transition: ${paper.status} → ${PAPER_STATUS.PUBLISHED}`
-      });
-    }
-
-    await decisionModel.updateDecision(paperId, PAPER_STATUS.PUBLISHED);
+    await pool.query(
+      "UPDATE papers SET is_published = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+      [true, paperId]
+    );
 
     await notificationModel.createNotification(
       paper.author_id,
@@ -123,7 +121,7 @@ const publishPaper = async (req, res) => {
       paperId,
       AUDIT.PAPER_PUBLISHED,
       req.user.id,
-      {}
+      { is_published: true }
     );
 
     res.json({
@@ -135,7 +133,48 @@ const publishPaper = async (req, res) => {
   }
 };
 
+// =====================
+// UNPUBLISH PAPER
+// =====================
+const unpublishPaper = async (req, res) => {
+  try {
+    const { paperId } = req.params;
+
+    if (!paperId) {
+      return res.status(400).json({
+        message: "paperId required"
+      });
+    }
+
+    const paper = await decisionModel.getPaper(paperId);
+
+    if (!paper) {
+      return res.status(404).json({ message: "Paper not found" });
+    }
+
+    await pool.query(
+      "UPDATE papers SET is_published = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+      [false, paperId]
+    );
+
+    await auditModel.logAction(
+      paperId,
+      AUDIT.PAPER_UNPUBLISHED,
+      req.user.id,
+      { is_published: false }
+    );
+
+    res.json({
+      message: "Paper unpublished successfully"
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   makeDecision,
-  publishPaper
+  publishPaper,
+  unpublishPaper
 };

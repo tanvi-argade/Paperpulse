@@ -57,7 +57,8 @@ const submitPaper = async (req, res) => {
           code: "VALIDATION_ERROR",
           message: "PDF file is required"
         }
-      });    }
+      });
+    }
 
     const pdf_url = `/uploads/${req.file.filename}`;
 
@@ -112,19 +113,18 @@ const getPublishedPapers = async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT 
-         p.id,
-         p.title,
-         p.abstract,
-         p.keywords,
-         p.pdf_url,
-         p.created_at,
-         u.name AS author_name
-       FROM papers p
-       JOIN users u ON p.author_id = u.id
-       WHERE p.status = $1
-       ORDER BY p.created_at DESC`
-      ,
-      [PAPER_STATUS.PUBLISHED]
+     p.id,
+     p.title,
+     p.abstract,
+     p.keywords,
+     p.pdf_url,
+     p.created_at,
+     u.name AS author_name
+   FROM papers p
+   JOIN users u ON p.author_id = u.id
+   WHERE p.is_published = true
+   AND p.status = 'accepted'
+   ORDER BY p.created_at DESC`
     );
 
     res.json(result.rows);

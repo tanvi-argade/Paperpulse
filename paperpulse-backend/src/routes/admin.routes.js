@@ -30,6 +30,13 @@ router.patch(
   decisionController.publishPaper
 );
 
+router.patch(
+  "/papers/:paperId/unpublish",
+  auth,
+  role("admin"),
+  decisionController.unpublishPaper
+);
+
 // NEW READ APIs
 router.get(
   "/users",

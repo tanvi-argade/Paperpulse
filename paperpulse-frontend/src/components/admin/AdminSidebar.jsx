@@ -9,6 +9,7 @@ const items = [
   { to: "/admin/assign", label: "Assign Reviewer", Icon: UserPlus },
   { to: "/admin/assignments", label: "Assignments", Icon: ClipboardList },
   { to: "/admin/decision", label: "Decision", Icon: Gavel },
+  { to: "/admin/publish-papers", label: "Publish Control", Icon: FileText },
 ];
 
 export default function AdminSidebar() {

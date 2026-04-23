@@ -15,7 +15,7 @@ exports.getUsers = async (req, res) => {
         message: "Failed to fetch users"
       }
     });
-    }
+  }
 };
 
 // 🔥 UPDATE ROLE (SAFE VERSION)
@@ -101,6 +101,7 @@ exports.getPapers = async (req, res) => {
         p.keywords,
         p.pdf_url,
         p.status,
+        p.is_published,
         p.created_at,
         p.updated_at,
         u.name AS author_name,

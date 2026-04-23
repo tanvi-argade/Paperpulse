@@ -19,6 +19,7 @@ import Papers from "../pages/admin/Papers";
 import AssignReviewer from "../pages/admin/AssignReviewer";
 import AdminAssignments from "../pages/admin/AdminAssignments";
 import AdminDecision from "../pages/admin/AdminDecision";
+import PublishPapers from "../pages/admin/PublishPapers";
 
 // Reviewer
 import ReviewerDashboard from "../pages/reviewer/ReviewerDashboard";
@@ -72,6 +73,7 @@ const AppRouter = () => {
             <Route path="assign" element={<AssignReviewer />} />
             <Route path="assignments" element={<AdminAssignments />} />
             <Route path="decision" element={<AdminDecision />} />
+            <Route path="publish-papers" element={<PublishPapers />} />
           </Route>
 
           {/* REVIEWER */}
