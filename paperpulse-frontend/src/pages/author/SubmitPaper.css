@@ -1,3 +1,9 @@
+.pp-submitPaper *,
+.pp-submitPaper *::before,
+.pp-submitPaper *::after {
+  box-sizing: border-box;
+}
+
 .pp-submitPaper {
   min-height: calc(100vh - 60px);
   position: relative;

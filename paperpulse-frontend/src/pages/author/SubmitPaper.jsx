@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom"; // ✅ ADD THIS
 import api from "../../api/axios";
+import { getUser } from "../../utils/auth";
 
 import "./SubmitPaper.css";
 
@@ -11,6 +12,10 @@ const SubmitPaper = () => {
     const [abstract, setAbstract] = useState("");
     const [keywords, setKeywords] = useState("");
     const [file, setFile] = useState(null);
+
+    const [coauthorName, setCoauthorName] = useState("");
+    const [coauthorEmail, setCoauthorEmail] = useState("");
+    const [coauthors, setCoauthors] = useState([]);
 
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
@@ -39,6 +44,32 @@ const SubmitPaper = () => {
 
     const openFilePicker = () => fileInputRef.current?.click();
 
+    const addCoauthor = () => {
+        if (!coauthorName) return; // Only name is required visually
+        if (coauthorEmail) {
+            const emailNormalized = coauthorEmail.trim().toLowerCase();
+            const currentUser = getUser();
+            
+            if (currentUser && currentUser.email && emailNormalized === currentUser.email.trim().toLowerCase()) {
+                setMessageTone("error");
+                setMessage("You are already the main author");
+                return;
+            }
+            if (coauthors.find(c => c.email && c.email.trim().toLowerCase() === emailNormalized)) {
+                setMessageTone("error");
+                setMessage("Co-author with this email already added");
+                return;
+            }
+        }
+        setCoauthors([...coauthors, { name: coauthorName, email: coauthorEmail || undefined }]);
+        setCoauthorName("");
+        setCoauthorEmail("");
+    };
+
+    const removeCoauthor = (indexToRemove) => {
+        setCoauthors(coauthors.filter((_, idx) => idx !== indexToRemove));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -55,6 +86,7 @@ const SubmitPaper = () => {
             formData.append("abstract", abstract);
             formData.append("keywords", keywords);
             formData.append("pdf", file);
+            formData.append("coauthors", JSON.stringify(coauthors));
 
             await api.post("/api/papers/submit", formData, {
                 headers: {
@@ -70,6 +102,7 @@ const SubmitPaper = () => {
             setAbstract("");
             setKeywords("");
             setFile(null);
+            setCoauthors([]);
             if (fileInputRef.current) fileInputRef.current.value = "";
 
             // ✅ OPTIONAL: redirect after success
@@ -77,7 +110,7 @@ const SubmitPaper = () => {
 
         } catch (err) {
             setMessageTone("error");
-            setMessage(err.response?.data?.message || "Submission failed");
+            setMessage(err.response?.data?.error?.message || err.response?.data?.message || "Submission failed");
         } finally {
             setLoading(false);
         }
@@ -158,6 +191,60 @@ const SubmitPaper = () => {
                                 required
                             />
                         </label>
+                    </section>
+
+                    <section className="pp-submitPaper__section" aria-label="Co-authors">
+                        <div className="pp-submitPaper__sectionTitle">Co-authors</div>
+                        
+                        <div className="pp-submitPaper__coauthorInput" style={{ display: "flex", gap: "1rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+                            <label className="pp-submitPaper__field" style={{ flex: "1 1 200px" }}>
+                                <div className="pp-submitPaper__label">Name *</div>
+                                <input
+                                    className="pp-submitPaper__input"
+                                    type="text"
+                                    placeholder="Jane Doe"
+                                    value={coauthorName}
+                                    onChange={(e) => setCoauthorName(e.target.value)}
+                                />
+                            </label>
+                            <label className="pp-submitPaper__field" style={{ flex: "1 1 200px" }}>
+                                <div className="pp-submitPaper__label">Email (Optional)</div>
+                                <input
+                                    className="pp-submitPaper__input"
+                                    type="email"
+                                    placeholder="jane@example.com"
+                                    value={coauthorEmail}
+                                    onChange={(e) => setCoauthorEmail(e.target.value)}
+                                />
+                            </label>
+                            <button 
+                                type="button" 
+                                className="pp-submitPaper__addBtn"
+                                onClick={addCoauthor}
+                                style={{ marginBottom: "0.25rem", padding: "0.5rem 1rem", backgroundColor: "var(--pp-primary, #2563eb)", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold"}}
+                            >
+                                Add
+                            </button>
+                        </div>
+
+                        {coauthors.length > 0 && (
+                            <ul className="pp-submitPaper__coauthorList" style={{ marginTop: "1rem", listStyle: "none", padding: 0 }}>
+                                {coauthors.map((c, idx) => (
+                                    <li key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem", padding: "0.5rem 1rem", background: "rgba(0,0,0,0.05)", borderRadius: "4px", border: "1px solid rgba(0,0,0,0.1)" }}>
+                                        <div>
+                                            <strong>{c.name}</strong> {c.email ? `<${c.email}>` : ""}
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => removeCoauthor(idx)}
+                                            style={{ color: "var(--pp-danger, #dc2626)", background: "none", border: "none", cursor: "pointer", fontWeight: "bold" }}
+                                        >
+                                            Remove
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </section>
 
                     <section className="pp-submitPaper__section" aria-label="Upload">

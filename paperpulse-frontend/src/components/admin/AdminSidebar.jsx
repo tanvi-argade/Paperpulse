@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { FileText, Users, UserPlus, ClipboardList, Gavel } from "lucide-react";
+import { FileText, Users, UserPlus, ClipboardList, Gavel, History } from "lucide-react";
 
 import "./AdminSidebar.css";
 
@@ -10,6 +10,7 @@ const items = [
   { to: "/admin/assignments", label: "Assignments", Icon: ClipboardList },
   { to: "/admin/decision", label: "Decision", Icon: Gavel },
   { to: "/admin/publish-papers", label: "Publish Control", Icon: FileText },
+  { to: "/admin/audit", label: "Audit Trail", Icon: History },
 ];
 
 export default function AdminSidebar() {

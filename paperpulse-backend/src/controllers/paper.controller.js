@@ -3,6 +3,8 @@ const paperModel = require("../models/paper.model");
 const auditModel = require("../models/audit.model");
 const PAPER_STATUS = require("../utils/paperStatus");
 const AUDIT = require("../utils/auditActions");
+const fs = require('fs');
+const path = require('path');
 
 // author paper stats
 const getPaperStats = async (req, res) => {
@@ -48,35 +50,122 @@ const getPaperStats = async (req, res) => {
 
 // submit paper
 const submitPaper = async (req, res) => {
+  const client = await pool.connect();
   try {
-    const { title, abstract, keywords } = req.body;
+    const { title, abstract, keywords, coauthors } = req.body;
+    
+    // Parse coauthors if sent as string from FormData
+    const parsedCoauthors = coauthors ? JSON.parse(coauthors) : [];
 
     if (!req.file) {
-      res.status(400).json({
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "PDF file is required"
+      return res.status(400).json({
+        error: { code: "VALIDATION_ERROR", message: "PDF file is required" }
+      });
+    }
+    const pdf_url = `/uploads/${req.file.filename}`;
+    const ownerId = req.user.id;
+
+    // 0. Fetch explicit OWNER details from users table
+    const userRes = await client.query(`SELECT name, email FROM users WHERE id = $1`, [ownerId]);
+    if (userRes.rows.length === 0) {
+      throw new Error("Owner user record not found.");
+    }
+    const ownerName = userRes.rows[0].name.trim();
+    const ownerEmail = userRes.rows[0].email.trim().toLowerCase();
+
+    // Strict validation and email normalization for coauthors
+    const normalizedCoauthors = [];
+    const coauthorEmails = [];
+    for (const author of parsedCoauthors) {
+      if (!author.name || !author.name.trim()) {
+        return res.status(400).json({
+          error: { code: "VALIDATION_ERROR", message: "Invalid co-author entry. Name is required." }
+        });
+      }
+      
+      let normalizedEmail = null;
+      if (author.email && author.email.trim()) {
+        normalizedEmail = author.email.trim().toLowerCase();
+        if (normalizedEmail === ownerEmail) {
+          return res.status(400).json({
+            error: { code: "VALIDATION_ERROR", message: "Owner cannot be added as a co-author." }
+          });
         }
+        coauthorEmails.push(normalizedEmail);
+      }
+      
+      normalizedCoauthors.push({
+        name: author.name.trim(),
+        email: normalizedEmail
       });
     }
 
-    const pdf_url = `/uploads/${req.file.filename}`;
+    if (coauthorEmails.length > 0 && new Set(coauthorEmails).size !== coauthorEmails.length) {
+       return res.status(400).json({
+        error: { code: "VALIDATION_ERROR", message: "Duplicate co-author emails are not allowed." }
+      });
+    }
 
-    const paper = await paperModel.createPaper(
-      req.user.id,
-      title,
-      abstract,
-      keywords,
-      pdf_url
+    console.log("[DEBUG] Starting submission for ownerId:", ownerId);
+    console.log("[DEBUG] Parsed coauthors:", normalizedCoauthors.length);
+    console.log("[DEBUG] Paper payload:", { title, abstract: abstract.substring(0, 20) + "...", keywords, pdf_url });
+
+    await client.query('BEGIN'); // Start Transaction
+
+    // 1. Insert Paper
+    const paperRes = await client.query(
+      `INSERT INTO papers (author_id, title, abstract, keywords, pdf_url)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [ownerId, title, abstract, keywords, pdf_url]
+    );
+    const paper = paperRes.rows[0];
+    console.log("[DEBUG] Paper inserted successfully:", paper.id);
+
+    // 2. Insert OWNER into paper_authors
+    await client.query(
+      `INSERT INTO paper_authors (paper_id, user_id, name_snapshot, email_snapshot, role, is_registered_user, author_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [paper.id, ownerId, ownerName, ownerEmail, 'OWNER', true, 1]
     );
 
-    // 🔥 AUDIT: submission event
-    await auditModel.logAction(
-      paper.id,
-      AUDIT.PAPER_SUBMITTED,
-      req.user.id,
-      { title }
-    );
+    let registeredCount = 1;
+    let externalCount = 0;
+
+    // 3. Insert CO_AUTHORS (Eliminate N+1 Query on Emails)
+    let userMap = new Map();
+    if (coauthorEmails.length > 0) {
+      const matchRes = await client.query(`SELECT id, email FROM users WHERE email = ANY($1)`, [coauthorEmails]);
+      matchRes.rows.forEach(u => userMap.set(u.email.trim().toLowerCase(), u.id));
+    }
+
+    let authorIndex = 2;
+    for (const author of normalizedCoauthors) {
+      const matchedUserId = author.email ? (userMap.get(author.email) || null) : null;
+      const isRegistered = matchedUserId !== null;
+      
+      if (isRegistered) registeredCount++; else externalCount++;
+
+      await client.query(
+        `INSERT INTO paper_authors (paper_id, user_id, name_snapshot, email_snapshot, role, is_registered_user, author_order)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [paper.id, matchedUserId, author.name, author.email, 'CO_AUTHOR', isRegistered, authorIndex]
+      );
+      authorIndex++;
+    }
+    console.log("[DEBUG] Inserted authors. Registered:", registeredCount, "External:", externalCount);
+
+    // 4. Audit Logging (Merged to avoid breaking ENUM limit)
+    // The audit_logs_action ENUM in DB does not contain 'author_list_finalized',
+    // so we merge author metadata into the primary PAPER_SUBMITTED action.
+    await auditModel.logAction(paper.id, AUDIT.PAPER_SUBMITTED, ownerId, { 
+       title,
+       total_authors: 1 + normalizedCoauthors.length,
+       registered_authors: registeredCount,
+       external_authors: externalCount
+    }, client);
+    console.log("[DEBUG] Audit log inserted cleanly under PAPER_SUBMITTED");
+
+    await client.query('COMMIT'); // Commit Transaction
 
     res.status(201).json({
       message: "Paper submitted successfully",
@@ -84,12 +173,22 @@ const submitPaper = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("DEBUG INTERNAL ERROR:", error);
+    await client.query('ROLLBACK');
+    
+    // Filesystem cleanup on rollback
+    if (req.file) {
+      const filePath = path.join(__dirname, '..', '..', 'uploads', req.file.filename);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error("Failed to delete uploaded file on rollback:", err);
+      });
+    }
+
     res.status(500).json({
-      error: {
-        code: "INTERNAL_ERROR",
-        message: error.message
-      }
+      error: { code: "INTERNAL_ERROR", message: error.message }
     });
+  } finally {
+    client.release();
   }
 };
 

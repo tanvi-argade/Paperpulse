@@ -7,8 +7,9 @@ const role = require("../middleware/role.middleware");
 const adminController = require("../controllers/admin.controller");
 const assignmentController = require("../controllers/assignment.controller");
 const decisionController = require("../controllers/decision.controller");
+const auditController = require("../controllers/audit.controller");
 
-// existing write APIs
+// EXISTING WRITE APIs
 router.post(
   "/assign-reviewer",
   auth,
@@ -71,6 +72,13 @@ router.patch(
   auth,
   role("admin"),
   adminController.updateUserRole
+);
+
+router.get(
+  "/audit",
+  auth,
+  role("admin"),
+  auditController.getLogs
 );
 
 module.exports = router;

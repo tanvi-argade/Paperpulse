@@ -11,52 +11,14 @@ const getMyNotifications = async (req, res) => {
         message: "Failed to fetch notifications"
       }
     });
-    }
+  }
 };
 
 const markMyNotificationsAsRead = async (req, res) => {
   try {
-    const { cutoff } = req.body;
-
-    // 1. Validate presence
-    if (!cutoff) {
-      return res.status(400).json({
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "cutoff timestamp required"
-        }
-      });
-    }
-
-    // 2. Validate format
-    const cutoffDate = new Date(cutoff);
-    if (isNaN(cutoffDate.getTime())) {
-      return res.status(400).json({
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Invalid cutoff timestamp"
-        }
-      });
-    }
-
-    // 🔴 3. Prevent future timestamps (CRITICAL)
-    const now = new Date();
-    if (cutoffDate > now) {
-      return res.status(400).json({
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "cutoff cannot be in future"
-        }
-      });
-    }
-
-    const normalizedCutoff = cutoffDate.toISOString();
 
     // 4. Update notifications
-    await notificationModel.markNotificationsAsReadUntil(
-      req.user.id,
-      normalizedCutoff
-    );
+    await notificationModel.markAllNotificationsAsRead(req.user.id);
 
     // 🔴 5. Return fresh state (prevents frontend drift)
     const updatedNotifications =

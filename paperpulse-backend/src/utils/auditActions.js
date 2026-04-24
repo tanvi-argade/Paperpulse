@@ -5,5 +5,6 @@ module.exports = {
     REVIEW_SUBMITTED: "review_submitted",
     FINAL_DECISION: "final_decision",
     PAPER_PUBLISHED: "paper_published",
-    PAPER_UNPUBLISHED: "paper_unpublished"
+    PAPER_UNPUBLISHED: "paper_unpublished",
+    AUTHOR_LIST_FINALIZED: "author_list_finalized"
   };

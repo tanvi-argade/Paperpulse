@@ -32,8 +32,18 @@ const markNotificationsAsReadUntil = async (user_id, cutoff) => {
   );
 };
 
+const markAllNotificationsAsRead = async (user_id) => {
+  await pool.query(
+    `UPDATE notifications
+     SET is_read = true
+     WHERE user_id = $1 AND is_read = false`,
+    [user_id]
+  );
+};
+
 module.exports = {
   createNotification,
   getNotificationsByUser,
-  markNotificationsAsReadUntil
+  markNotificationsAsReadUntil,
+  markAllNotificationsAsRead
 };

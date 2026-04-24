@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
 import {
@@ -37,6 +37,7 @@ const AuthorDashboard = () => {
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchPapers = async () => {
     try {
@@ -90,38 +91,23 @@ const AuthorDashboard = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       const res = await api.get("/api/notifications");
-      const nextNotifications = Array.isArray(res.data) ? res.data : [];
-      console.log("[Notifications] GET /api/notifications response:", res.data);
-      setNotifications((prev) => {
-        console.log("[Notifications] fetchNotifications - state BEFORE update:", prev);
-        console.log(
-          "[Notifications] fetchNotifications - is_read diagnostics:",
-          nextNotifications.map((item) => ({
-            id: item.id,
-            hasIsRead: Object.prototype.hasOwnProperty.call(item, "is_read"),
-            isReadValue: item.is_read,
-            isReadType: typeof item.is_read,
-          }))
-        );
-        console.log("[Notifications] UPDATED STATE:", nextNotifications);
-        return nextNotifications;
-      });
+      setNotifications(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.log(err.response?.data || err.message);
+      console.error("Failed to fetch notifications:", err.message);
       setNotifications([]);
     }
   }, []);
 
   const markNotificationsAsRead = async () => {
     try {
-      console.log("[Notifications] markNotificationsAsRead - state BEFORE update:", notifications);
+      if (notifications.length === 0 || notifications.every(n => n.is_read)) return;
       const cutoff = notifications[0]?.created_at || new Date().toISOString();
       const res = await api.patch("/api/notifications/read", { cutoff });
-      console.log("[Notifications] PATCH /api/notifications/read response:", res.data);
-      console.log("[Notifications] markNotificationsAsRead - state AFTER patch before refetch:", notifications);
-      await fetchNotifications();
+      if (res.data.notifications) {
+          setNotifications(res.data.notifications);
+      }
     } catch (err) {
-      console.log(err.response?.data || err.message);
+      console.error("Failed to mark notifications as read:", err.message);
     }
   };
 
@@ -131,6 +117,16 @@ const AuthorDashboard = () => {
     fetchStats();
     fetchNotifications();
   }, [fetchNotifications]);
+
+  // handle paperId from query string
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const pId = params.get("paperId");
+    if (pId) {
+      setSelectedPaper(Number(pId));
+      fetchReviews(pId);
+    }
+  }, [location.search]);
 
   // 🔥 ADD HERE (focus sync)
   useEffect(() => {
@@ -152,10 +148,6 @@ const AuthorDashboard = () => {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
-
-  useEffect(() => {
-    console.log("[Notifications] notifications state AFTER update:", notifications);
-  }, [notifications]);
 
   const normalizeStatus = (value) => String(value || "").trim().toLowerCase();
   const statusMeta = (status) => {
@@ -218,14 +210,11 @@ const AuthorDashboard = () => {
 
   const handleNotificationToggle = async () => {
     const next = !showDropdown;
-    console.log("[Notifications] Bell toggle clicked. Opening:", next);
-    console.log("[Notifications] handleNotificationToggle - state BEFORE update:", notifications);
     setShowDropdown(next);
 
     if (next) {
       await markNotificationsAsRead();
     }
-    console.log("[Notifications] handleNotificationToggle - state AFTER update:", notifications);
   };
 
   return (
@@ -293,8 +282,13 @@ const AuthorDashboard = () => {
             >
               <Notifications
                 notifications={notifications}
-                onViewAllClick={() => {
-                  console.log("[Notifications] View All clicked");
+                onItemClick={(item) => {
+                  if (item.paper_id) {
+                    navigate(`/author?paperId=${item.paper_id}`);
+                  } else {
+                    navigate("/author");
+                  }
+                  setShowDropdown(false);
                 }}
               />
             </div>
@@ -413,6 +407,13 @@ const AuthorDashboard = () => {
                       <div className="pp-paperCard__title">{paper.title}</div>
                       <span className={`pp-badge pp-badge--${meta.tone}`}>{meta.label}</span>
                     </div>
+
+                    {paper.authors && paper.authors.length > 0 && (
+                      <div className="pp-paperCard__authors" style={{ fontSize: "13px", color: "rgba(51, 65, 85, 0.85)", marginBottom: "8px", marginTop: "-6px", fontWeight: "600" }}>
+                        Authors: {paper.authors.map(a => a.name_snapshot).join(", ")}
+                      </div>
+                    )}
+
                     <div className="pp-keywords">
                       {pills.map((k, i) => (
                         <span key={i} className="pp-pill">{k}</span>
