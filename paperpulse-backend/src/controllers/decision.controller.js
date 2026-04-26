@@ -3,9 +3,11 @@ const decisionModel = require("../models/decision.model");
 const notificationModel = require("../models/notification.model");
 const auditModel = require("../models/audit.model");
 const reviewModel = require("../models/review.model");
+const paymentModel = require("../models/payment.model");
 const { canTransition } = require("../utils/workflow");
 const AUDIT = require("../utils/auditActions");
 const PAPER_STATUS = require("../utils/paperStatus");
+const emailService = require("../utils/email.service");
 
 // =====================
 // MAKE DECISION
@@ -72,6 +74,26 @@ const makeDecision = async (req, res) => {
       { decision }
     );
 
+    // 🔥 EMAIL NOTIFICATION (SILENT FAIL)
+    try {
+      const userRes = await pool.query("SELECT email FROM users WHERE id = $1", [paper.author_id]);
+      const authorEmail = userRes.rows[0]?.email;
+      
+      if (authorEmail) {
+        const decisionText = decision === PAPER_STATUS.ACCEPTED
+          ? "Your paper has been ACCEPTED. You can now proceed with payment to publish."
+          : "Your paper has been REJECTED.";
+
+        await emailService.sendEmail(
+          authorEmail,
+          "Paper Decision Update",
+          decisionText
+        );
+      }
+    } catch (err) {
+      console.error("[EMAIL ERROR] Decision email failed:", err.message);
+    }
+
     res.json({
       message: `Paper ${decision} successfully`
     });
@@ -106,6 +128,14 @@ const publishPaper = async (req, res) => {
       });
     }
 
+    // 🔥 PAYMENT GATE
+    const payment = await paymentModel.getPaymentByPaper(paperId);
+    if (!payment || payment.status !== 'success') {
+      return res.status(400).json({
+        message: "Payment required before publishing"
+      });
+    }
+
     await pool.query(
       "UPDATE papers SET is_published = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
       [true, paperId]
@@ -123,6 +153,22 @@ const publishPaper = async (req, res) => {
       req.user.id,
       { is_published: true }
     );
+
+    // 🔥 EMAIL NOTIFICATION (SILENT FAIL)
+    try {
+      const userRes = await pool.query("SELECT email FROM users WHERE id = $1", [paper.author_id]);
+      const authorEmail = userRes.rows[0]?.email;
+      
+      if (authorEmail) {
+        await emailService.sendEmail(
+          authorEmail,
+          "Paper Published",
+          "Your paper is now published and publicly visible."
+        );
+      }
+    } catch (err) {
+      console.error("[EMAIL ERROR] Publication email failed:", err.message);
+    }
 
     res.json({
       message: "Paper published successfully"

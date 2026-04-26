@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { getPapers, publishPaper, unpublishPaper } from "../../services/adminService";
+import { getPaymentInfo } from "../../services/paymentService";
 
 const PublishPapers = () => {
   const [papers, setPapers] = useState([]);
+  const [payments, setPayments] = useState({}); // { paperId: status }
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null); // id of paper being processed
   const [error, setError] = useState("");
@@ -13,6 +15,19 @@ const PublishPapers = () => {
       const data = await getPapers();
       const acceptedPapers = data.filter(p => p.status === "accepted");
       setPapers(acceptedPapers);
+
+      // Fetch payment info for each accepted paper
+      const payData = {};
+      for (const p of acceptedPapers) {
+        try {
+          const info = await getPaymentInfo(p.id);
+          payData[p.id] = info.status;
+        } catch (e) {
+          payData[p.id] = 'none';
+        }
+      }
+      setPayments(payData);
+
       setError("");
     } catch (err) {
       console.error(err);
@@ -71,13 +86,17 @@ const PublishPapers = () => {
                 <td style={{ padding: '10px', borderBottom: '1px solid #eee' }}>{paper.status}</td>
                 <td style={{ padding: '10px', borderBottom: '1px solid #eee' }}>{paper.is_published ? "Yes" : "No"}</td>
                 <td style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
-                  <button 
-                    onClick={() => handleToggle(paper)}
-                    disabled={actionLoading === paper.id}
-                    style={{ padding: '5px 10px', cursor: actionLoading === paper.id ? 'not-allowed' : 'pointer' }}
-                  >
-                    {actionLoading === paper.id ? "Processing..." : (paper.is_published ? "Unpublish" : "Publish")}
-                  </button>
+                  {payments[paper.id] !== 'success' ? (
+                    <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>Payment Pending</span>
+                  ) : (
+                    <button 
+                      onClick={() => handleToggle(paper)}
+                      disabled={actionLoading === paper.id}
+                      style={{ padding: '5px 10px', cursor: actionLoading === paper.id ? 'not-allowed' : 'pointer' }}
+                    >
+                      {actionLoading === paper.id ? "Processing..." : (paper.is_published ? "Unpublish" : "Publish")}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

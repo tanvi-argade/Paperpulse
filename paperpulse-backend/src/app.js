@@ -5,8 +5,7 @@ const paperRoutes = require("./routes/paper.routes");
 const adminRoutes = require("./routes/admin.routes");
 const reviewerRoutes = require("./routes/reviewer.routes");
 const notificationRoutes = require("./routes/notification.routes");
-
-
+const paymentRoutes = require("./routes/payment.routes");
 
 const app = express();
 
@@ -18,6 +17,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/papers", paperRoutes);
 app.use("/api/reviewer", reviewerRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/payments", paymentRoutes);
 
 
 app.get("/", (req, res) => {

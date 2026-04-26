@@ -12,6 +12,7 @@ import {
 import Notifications from "../../components/notifications/Notifications";
 import PaperTimeline from "../../components/papers/PaperTimeline";
 import { formatTimeAgo } from "../../utils/time";
+import * as paymentService from "../../services/paymentService";
 
 import "./Dashboard.css";
 
@@ -26,6 +27,8 @@ const AuthorDashboard = () => {
   const [timeline, setTimeline] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [paymentStatuses, setPaymentStatuses] = useState({}); // { paperId: 'pending' | 'success' | 'none' }
+  const [paymentLoading, setPaymentLoading] = useState({}); // { paperId: boolean }
   const dropdownRef = useRef(null);
 
   const [stats, setStats] = useState({
@@ -42,7 +45,18 @@ const AuthorDashboard = () => {
   const fetchPapers = async () => {
     try {
       const res = await api.get("/api/papers/my");
-      setPapers(res.data);
+      const myPapers = res.data;
+      setPapers(myPapers);
+
+      // Fetch payment statuses for all papers
+      myPapers.forEach(async (p) => {
+        try {
+          const payInfo = await paymentService.getPaymentInfo(p.id);
+          setPaymentStatuses(prev => ({ ...prev, [p.id]: payInfo.status }));
+        } catch (err) {
+          console.error("Failed to fetch payment info", err);
+        }
+      });
     } catch (err) {
       console.log(err.response?.data || err.message);
     }
@@ -149,11 +163,38 @@ const AuthorDashboard = () => {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
+  const handlePay = async (paperId) => {
+    try {
+      setPaymentLoading(prev => ({ ...prev, [paperId]: true }));
+      
+      // 1. Create payment (or update existing)
+      await paymentService.createPayment(paperId);
+      
+      // 2. Simulate success (per instructions: mock success)
+      const res = await paymentService.simulatePayment(paperId, 'success');
+      
+      setPaymentStatuses(prev => ({ ...prev, [paperId]: res.payment.status }));
+      alert("Payment successful. You can now publish your paper.");
+      
+      // Refresh stats if helpful
+      fetchStats();
+    } catch (err) {
+      alert(err.response?.data?.message || "Payment failed");
+    } finally {
+      setPaymentLoading(prev => ({ ...prev, [paperId]: false }));
+    }
+  };
+
   const normalizeStatus = (value) => String(value || "").trim().toLowerCase();
-  const statusMeta = (status) => {
-    const s = normalizeStatus(status);
+  const statusMeta = (paper) => {
+    const s = normalizeStatus(paper?.status);
+    const isPublished = !!paper?.is_published;
+
+    if (isPublished) {
+      return { label: "Published", tone: "success", hint: "Available publicly" };
+    }
     if (s === "accepted") {
-      return { label: "Accepted", tone: "success", hint: "Published" };
+      return { label: "Accepted", tone: "success", hint: "Awaiting payment/publication" };
     }
     if (s === "rejected") {
       return { label: "Rejected", tone: "danger", hint: "Requires resubmission" };
@@ -164,7 +205,7 @@ const AuthorDashboard = () => {
     if (s === "submitted") {
       return { label: "Submitted", tone: "info", hint: "Waiting for review" };
     }
-    return { label: status || "Unknown", tone: "neutral", hint: "" };
+    return { label: paper?.status || "Unknown", tone: "neutral", hint: "" };
   };
 
   const toPills = (keywords) => {
@@ -191,15 +232,22 @@ const AuthorDashboard = () => {
 
   const filterOptions = [
     { key: "all", label: "All" },
-    { key: "accepted", label: "Accepted" },
-    { key: "rejected", label: "Rejected" },
-    { key: "under_review", label: "Under Review" },
     { key: "submitted", label: "Submitted" },
+    { key: "under_review", label: "Under Review" },
+    { key: "accepted", label: "Accepted" },
+    { key: "published", label: "Published" },
+    { key: "rejected", label: "Rejected" },
   ];
 
   const filteredPapers = papers.filter((paper) => {
-    const statusOk =
-      filter === "all" ? true : normalizeStatus(paper?.status) === filter;
+    const s = normalizeStatus(paper?.status);
+    const isPub = !!paper?.is_published;
+
+    let statusOk = false;
+    if (filter === "all") statusOk = true;
+    else if (filter === "published") statusOk = isPub;
+    else if (filter === "accepted") statusOk = (s === "accepted" && !isPub);
+    else statusOk = (s === filter);
 
     const q = search.trim().toLowerCase();
     const title = String(paper?.title || "").toLowerCase();
@@ -392,7 +440,7 @@ const AuthorDashboard = () => {
 
             <div className="pp-paperGrid">
               {filteredPapers.map((paper) => {
-                const meta = statusMeta(paper.status);
+                const meta = statusMeta(paper);
                 const pills = toPills(paper.keywords);
                 const updated = parseUpdatedAt(paper);
                 const updatedText = updated ? formatTimeAgo(updated) : null;
@@ -428,16 +476,35 @@ const AuthorDashboard = () => {
 
                     <div className="pp-paperCard__meta">
                       {updatedText ? <span>Updated {updatedText}</span> : <span>—</span>}
+                      {paper.is_published && <span style={{ marginLeft: "8px", color: "#16a34a", fontWeight: "bold" }}>(Published)</span>}
                     </div>
 
                     <div className="pp-paperCard__actions">
+                      {/* 🔥 NEW PAYMENT BUTTON/BADGE */}
+                      {normalizeStatus(paper.status) === "accepted" && (
+                        <div style={{ marginLeft: "auto", display: "flex", gap: "10px", alignItems: "center" }}>
+                          {paymentStatuses[paper.id] === "success" ? (
+                            <span className="pp-badge pp-badge--success" style={{ padding: "4px 10px" }}>Paid</span>
+                          ) : (
+                            <button
+                              className="pp-authorDash__cta pp-authorDash__cta--secondary"
+                              style={{ padding: "6px 12px", fontSize: "12px", border: "1px solid #2563eb", color: "#2563eb" }}
+                              onClick={() => handlePay(paper.id)}
+                              disabled={paymentLoading[paper.id]}
+                            >
+                              {paymentLoading[paper.id] ? "Processing..." : "Pay Now"}
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Existing Actions */}
                       {viewHref && (
                         <a className="pp-paperAction" href={viewHref} target="_blank" rel="noreferrer">
                           View Paper
                         </a>
                       )}
 
-                      {/* 🔥 NEW BUTTON */}
                       {paper.status !== "submitted" && (
                         <button
                           className="pp-paperAction"

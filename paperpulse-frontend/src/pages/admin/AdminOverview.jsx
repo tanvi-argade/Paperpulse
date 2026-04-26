@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CheckCircle2, Clock, FileClock, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, FileClock, XCircle, Globe, CreditCard, Receipt } from "lucide-react";
 
 import { getPaperReviews, getPapers } from "../../services/adminService";
+import { getPaymentInfo } from "../../services/paymentService";
 import "./AdminOverview.css";
 
 const normalizeStatus = (value) => String(value || "").trim().toLowerCase();
@@ -13,6 +14,7 @@ const isRejected = (s) => s === "rejected";
 
 export default function AdminOverview() {
   const [papers, setPapers] = useState([]);
+  const [payments, setPayments] = useState({}); // { paperId: status }
   const [requiresDecisionCount, setRequiresDecisionCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -29,8 +31,20 @@ export default function AdminOverview() {
         const papersList = Array.isArray(all) ? all : [];
         setPapers(papersList);
 
-        // ❌ REMOVED N+1 REVIEW CALLS
-        // Instead derive "requires decision" from paper status only
+        // Fetch payments for each paper (per instruction: minimal per paper)
+        // Only fetch for relevant papers (accepted/published) to minimize calls if needed, 
+        // but here we fetch for all to ensure Paid count is accurate.
+        const payMap = {};
+        await Promise.all(papersList.map(async (p) => {
+          try {
+            const info = await getPaymentInfo(p.id);
+            if (mounted) payMap[p.id] = info.status;
+          } catch (e) {
+            if (mounted) payMap[p.id] = 'none';
+          }
+        }));
+        if (mounted) setPayments(payMap);
+
         const requiresDecision = papersList.filter(
           (p) => normalizeStatus(p.status) === "under_review"
         ).length;
@@ -55,8 +69,13 @@ export default function AdminOverview() {
     const accepted = list.filter((p) => isAccepted(normalizeStatus(p.status))).length;
     const rejected = list.filter((p) => isRejected(normalizeStatus(p.status))).length;
 
-    return { submitted, underReview, accepted, rejected };
-  }, [papers]);
+    // 🔴 NEW METRICS
+    const published = list.filter(p => p.is_published).length;
+    const paid = list.filter(p => payments[p.id] === 'success').length;
+    const unpaidAccepted = list.filter(p => isAccepted(normalizeStatus(p.status)) && payments[p.id] !== 'success').length;
+
+    return { submitted, underReview, accepted, rejected, published, paid, unpaidAccepted };
+  }, [papers, payments]);
 
   const cards = [
     {
@@ -88,6 +107,24 @@ export default function AdminOverview() {
       value: requiresDecisionCount,
       Icon: AlertTriangle,
       tone: "accent",
+    },
+    {
+      label: "Published",
+      value: stats.published,
+      Icon: Globe,
+      tone: "success",
+    },
+    {
+      label: "Paid Papers",
+      value: stats.paid,
+      Icon: CreditCard,
+      tone: "info",
+    },
+    {
+      label: "Accepted (Unpaid)",
+      value: stats.unpaidAccepted,
+      Icon: Receipt,
+      tone: "warning",
     },
   ];
 

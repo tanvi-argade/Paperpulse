@@ -5,6 +5,7 @@ const PAPER_STATUS = require("../utils/paperStatus");
 const AUDIT = require("../utils/auditActions");
 const fs = require('fs');
 const path = require('path');
+const emailService = require("../utils/email.service");
 
 // author paper stats
 const getPaperStats = async (req, res) => {
@@ -166,6 +167,17 @@ const submitPaper = async (req, res) => {
     console.log("[DEBUG] Audit log inserted cleanly under PAPER_SUBMITTED");
 
     await client.query('COMMIT'); // Commit Transaction
+
+    // 🔥 EMAIL NOTIFICATION (SILENT FAIL)
+    try {
+      await emailService.sendEmail(
+        ownerEmail,
+        "Paper Submitted Successfully",
+        "Your paper has been submitted and is under review."
+      );
+    } catch (err) {
+      console.error("[EMAIL ERROR] Submission email failed:", err.message);
+    }
 
     res.status(201).json({
       message: "Paper submitted successfully",
