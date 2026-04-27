@@ -8,6 +8,7 @@ const { canTransition } = require("../utils/workflow");
 const AUDIT = require("../utils/auditActions");
 const PAPER_STATUS = require("../utils/paperStatus");
 const emailService = require("../utils/email.service");
+const { generateCertificate } = require("../services/certificate.service");
 
 // =====================
 // MAKE DECISION
@@ -140,6 +141,9 @@ const publishPaper = async (req, res) => {
       "UPDATE papers SET is_published = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
       [true, paperId]
     );
+
+    // Generate Certificate (Async)
+    await generateCertificate(paperId);
 
     await notificationModel.createNotification(
       paper.author_id,

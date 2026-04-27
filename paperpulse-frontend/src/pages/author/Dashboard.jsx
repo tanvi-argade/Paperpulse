@@ -185,16 +185,35 @@ const AuthorDashboard = () => {
     }
   };
 
+  const handleDownloadCertificate = async (paperId) => {
+    try {
+      const response = await api.get(`/api/certificates/${paperId}`, {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `certificate-paper-${paperId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Download failed:", err);
+      alert(err.response?.data?.message || "Failed to download certificate. It might still be generating.");
+    }
+  };
+
   const normalizeStatus = (value) => String(value || "").trim().toLowerCase();
   const statusMeta = (paper) => {
     const s = normalizeStatus(paper?.status);
     const isPublished = !!paper?.is_published;
 
     if (isPublished) {
-      return { label: "Published", tone: "success", hint: "Available publicly" };
+      return { label: "Published", tone: "published", hint: "Available publicly" };
     }
     if (s === "accepted") {
-      return { label: "Accepted", tone: "success", hint: "Awaiting payment/publication" };
+      return { label: "Accepted", tone: "warning", hint: "Awaiting payment/publication" };
     }
     if (s === "rejected") {
       return { label: "Rejected", tone: "danger", hint: "Requires resubmission" };
@@ -500,14 +519,23 @@ const AuthorDashboard = () => {
 
                       {/* Existing Actions */}
                       {viewHref && (
-                        <a className="pp-paperAction" href={viewHref} target="_blank" rel="noreferrer">
+                        <a className="pp-paperAction pp-btn-view" href={viewHref} target="_blank" rel="noreferrer">
                           View Paper
                         </a>
                       )}
 
+                      {paper.is_published && (
+                        <button
+                          className="pp-paperAction pp-btn-certificate"
+                          onClick={() => handleDownloadCertificate(paper.id)}
+                        >
+                          Download Certificate
+                        </button>
+                      )}
+
                       {paper.status !== "submitted" && (
                         <button
-                          className="pp-paperAction"
+                          className="pp-paperAction pp-btn-reviews"
                           onClick={() => fetchReviews(paper.id)}
                         >
                           View Reviews

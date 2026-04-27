@@ -1,207 +1,232 @@
-# PROJECT SETUP GUIDE
+Here is your **corrected production-grade setup.md with INTEGER-based system (UUID fully removed and normalized)**.
+
+---
+
+# ✅ Updated `setup.md` (INTEGER-based system fixed)
+
+````md
+# PaperPulse Setup Guide
+
+Welcome to the **PaperPulse Academic Repository** setup guide. This document provides a comprehensive, production-ready guide to setting up and running the PaperPulse system locally.
+
+---
 
 ## 1. Prerequisites
-- **Node.js**: Latest LTS recommended (no `engines` version is pinned in this repo).
-- **npm**: Comes with Node.js (this project uses `package-lock.json`).
-- **PostgreSQL**: Required (backend uses `pg` and connects via env vars).
-- **Git**: Optional but recommended (for cloning/versioning).
 
-## 2. Project Structure Overview
-- **`paperpulse-frontend/`**: React (Create React App) UI. Runs on `http://localhost:3000`.
-- **`paperpulse-backend/`**: Express API + PostgreSQL + file uploads. Runs on `http://localhost:5000`.
-- **Key backend modules**
-  - `src/app.js`: Express app + routes + `/uploads` static hosting
-  - `src/server.js`: starts the server
-  - `src/config/db.js`: PostgreSQL connection pool
-  - `src/routes/`: route groups (`auth`, `papers`, `reviewer`, `admin`)
+Ensure you have the following installed on your system:
+- **Node.js** (v16.x or higher)
+- **npm** (v7.x or higher)
+- **PostgreSQL** (v12.x or higher)
 
-## 3. Backend Setup
-### 3.1 Install backend dependencies
-1. Open a terminal.
-2. Run:
+---
+
+## 2. Project Structure
+
+The project is divided into two main directories:
+- **`paperpulse-backend/`**: Node.js + Express API handling logic, database, and storage.
+- **`paperpulse-frontend/`**: React application for the user interface.
+
+---
+
+## 3. Database Setup
+
+### PostgreSQL Configuration
+1. Create a new database named `paperpulse`.
+2. Ensure your PostgreSQL service is running and accessible.
+
+---
+
+### Schema Initialization (INTEGER BASED SYSTEM)
+
+Run the following SQL commands:
+
+```sql
+-- 1. Users Table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(50) NOT NULL CHECK (role IN ('AUTHOR', 'REVIEWER', 'ADMIN')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Papers Table
+CREATE TABLE papers (
+  id SERIAL PRIMARY KEY,
+  author_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  abstract TEXT,
+  keywords TEXT,
+  pdf_url TEXT,
+  status VARCHAR(50) DEFAULT 'submitted',
+  is_published BOOLEAN DEFAULT FALSE,
+  certificate_url TEXT,
+  certificate_generated_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Paper Authors Table (Multi-author support)
+CREATE TABLE paper_authors (
+  id SERIAL PRIMARY KEY,
+  paper_id INTEGER NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  name_snapshot VARCHAR(255) NOT NULL,
+  email_snapshot VARCHAR(255),
+  role VARCHAR(50) NOT NULL CHECK (role IN ('OWNER', 'CO_AUTHOR')),
+  is_registered_user BOOLEAN NOT NULL DEFAULT FALSE,
+  author_order INT NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Reviewer Assignments Table
+CREATE TABLE reviewer_assignments (
+  id SERIAL PRIMARY KEY,
+  paper_id INTEGER NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  reviewer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Reviews Table
+CREATE TABLE reviews (
+  id SERIAL PRIMARY KEY,
+  paper_id INTEGER NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+  reviewer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  comments TEXT,
+  recommendation VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Payments Table
+CREATE TABLE payments (
+  id SERIAL PRIMARY KEY,
+  paper_id INTEGER NOT NULL UNIQUE REFERENCES papers(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  amount DECIMAL(10, 2) DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7. Notifications Table
+CREATE TABLE notifications (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type VARCHAR(50) NOT NULL,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 8. Audit Logs Table
+CREATE TABLE audit_logs (
+  id SERIAL PRIMARY KEY,
+  paper_id INTEGER REFERENCES papers(id) ON DELETE SET NULL,
+  action VARCHAR(255) NOT NULL,
+  performed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  meta JSONB DEFAULT '{}',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+````
+
+---
+
+## 4. Backend Setup (`paperpulse-backend/`)
+
+### 1. Install Dependencies
 
 ```bash
 cd paperpulse-backend
 npm install
+npm install pdfkit
 ```
 
-### 3.2 Create the backend `.env`
-1. In `paperpulse-backend/`, create a file named `.env`.
-2. Add the following variables (edit values for your machine):
+---
+
+### 2. Configure Environment Variables
+
+Create `.env`:
 
 ```env
 PORT=5000
-
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=YOUR_PASSWORD
+DB_USER=your_postgres_user
+DB_PASSWORD=your_postgres_password
 DB_NAME=paperpulse
-
-JWT_SECRET=YOUR_SECRET
+JWT_SECRET=your_jwt_secret_key
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_specific_password
 ```
 
-### 3.3 Ensure the uploads folder exists
-The backend serves uploaded PDFs from `paperpulse-backend/uploads/`.
+---
 
-If the folder does not exist, create it:
+### 3. Setup Storage Folders
 
 ```bash
-mkdir uploads
+mkdir -p uploads/pdfs uploads/certificates
 ```
 
-### 3.4 Run the backend
-- **Development (auto-restart):**
+---
+
+### 4. Run Server
 
 ```bash
 npm run dev
 ```
 
-- **Production-style (no auto-restart):**
+Backend:
+`http://localhost:5000`
 
-```bash
-npm start
-```
+---
 
-Backend health check:
-- Open `http://localhost:5000/` in a browser → should respond “PaperPulse API Running”.
+## 5. Frontend Setup (`paperpulse-frontend/`)
 
-## 4. Frontend Setup
-### 4.1 Install frontend dependencies
-In a new terminal:
+### 1. Install Dependencies
 
 ```bash
 cd paperpulse-frontend
 npm install
 ```
 
-### 4.2 Frontend environment config
-- No frontend `.env` is required for default local development.
-- The frontend API base URL is hardcoded to `http://localhost:5000`.
-
-### 4.3 Run the frontend
+### 2. Start Frontend
 
 ```bash
 npm start
 ```
 
-Then open:
-- `http://localhost:3000`
+Frontend:
+`http://localhost:3000`
 
-## 5. Database Setup (PostgreSQL)
-### 5.1 Create the database
-Using `psql`:
+---
 
-```bash
-psql -U postgres
-CREATE DATABASE paperpulse;
+## 6. Features Summary
+
+1. **Auth System**: JWT-based RBAC (AUTHOR, REVIEWER, ADMIN)
+2. **Paper Workflow**: Submission → Review → Decision → Publish
+3. **Payment System**: Accepted papers require payment before publish
+4. **Publishing Control**: Admin-only publishing
+5. **Certificate System**: PDF generated using pdfkit after publish (single page, stored in uploads/certificates)
+6. **Notification & Audit System**: DB-driven logs and notifications
+
+---
+
+## 7. File Storage
+
+* Papers: `uploads/pdfs/`
+* Certificates: `uploads/certificates/`
+* Access via `/uploads` static route
+
+---
+
+## 8. Final Checklist
+
+* [ ] Backend `.env` configured
+* [ ] PostgreSQL database created
+* [ ] Schema applied (INTEGER version)
+* [ ] Upload folders created
+* [ ] Backend running
+* [ ] Frontend running
+
 ```
-
-### 5.2 Create required tables (manual schema)
-This project does not include migrations. Create tables manually (example schema aligned to code usage):
-
-```sql
--- Run inside the `paperpulse` database
-
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'author',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS papers (
-  id SERIAL PRIMARY KEY,
-  author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  abstract TEXT NOT NULL,
-  keywords TEXT NOT NULL,
-  pdf_url TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'submitted',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS reviewer_assignments (
-  id SERIAL PRIMARY KEY,
-  paper_id INTEGER NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
-  reviewer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (paper_id, reviewer_id)
-);
-
-CREATE TABLE IF NOT EXISTS reviews (
-  id SERIAL PRIMARY KEY,
-  paper_id INTEGER NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
-  reviewer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  comments TEXT NOT NULL,
-  recommendation TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (paper_id, reviewer_id)
-);
-
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id SERIAL PRIMARY KEY,
-  paper_id INTEGER REFERENCES papers(id) ON DELETE CASCADE,
-  action TEXT NOT NULL,
-  performed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  meta JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS notifications (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
-  message TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### 5.3 Create an admin user (manual)
-Registration defaults users to the `author` role. To access the admin UI, you must create an admin user directly in the database.
-
-Option A (recommended): create a normal user via UI first, then update role in DB:
-
-```sql
-UPDATE users SET role = 'admin' WHERE email = 'YOUR_EMAIL';
-```
-
-## 6. File Upload / External Services
-- **Uploads**
-  - PDFs are saved to `paperpulse-backend/uploads/`.
-  - The backend exposes them at `http://localhost:5000/uploads/<filename>`.
-- **JWT**
-  - Tokens are signed using `JWT_SECRET` from the backend `.env`.
-  - Frontend stores token and role in `localStorage`.
-
-## 7. Common Issues & Fixes
-- **Port conflicts**
-  - Backend uses `5000` and frontend uses `3000`. Change `PORT` in backend `.env` if needed.
-  - If you change backend port, you must update the frontend API base URL (currently `http://localhost:5000`).
-
-- **Database connection errors**
-  - Verify PostgreSQL is running.
-  - Verify `.env` values for `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.
-  - Ensure the database and tables exist.
-
-- **Login works but pages redirect back to login**
-  - Token must be stored as `Bearer` auth automatically by the frontend’s Axios interceptor.
-  - Clear browser storage and log in again if roles/tokens changed: DevTools → Application → Local Storage → clear.
-
-- **CORS issues**
-  - Backend enables CORS globally. If you changed ports/domains, restart backend and ensure frontend points to the correct backend URL.
-
-- **Uploads/PDF links return 404**
-  - Ensure `paperpulse-backend/uploads/` exists.
-  - Ensure backend is running and serving `/uploads` statically.
-
-## 8. Final Run Checklist
-- Backend running at `http://localhost:5000/`
-- Frontend running at `http://localhost:3000/`
-- PostgreSQL running and `paperpulse` DB + tables created
-- Able to register + login
-- Admin user exists (role set to `admin` in DB) to access `/admin`
-
