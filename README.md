@@ -1,27 +1,30 @@
-Below is a **complete GitHub README.md for PaperPulse**, built using the wireframe + filled with your actual system + includes **Mermaid diagrams, visual structure, FAANG-style clarity, and no fluff**.
 
-You can copy-paste this directly into GitHub.
+<h1 align="center">🎓 PaperPulse</h1>
+<p align="center"><strong>Workflow-Driven Paper Publishing System</strong></p>
 
----
+<p align="center">
+  <img src="https://img.shields.io/badge/Backend-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/API-Express.js-000000?style=for-the-badge&logo=express&logoColor=white" />
+  <img src="https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" />
+</p>
 
-# 🎓 PaperPulse — Workflow-Driven Academic Publishing System
-
-![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Express](https://img.shields.io/badge/API-Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
-![React](https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
-![JWT](https://img.shields.io/badge/Auth-JWT-orange?style=for-the-badge&logo=jsonwebtokens)
-![PDFKit](https://img.shields.io/badge/Docs-PDF%20Generation-red?style=for-the-badge)
-![Architecture](https://img.shields.io/badge/Design-Workflow%20Engine-purple?style=for-the-badge)
-![Status](https://img.shields.io/badge/Project-Production%20Level-success?style=for-the-badge)
+<p align="center">
+  <img src="https://img.shields.io/badge/Auth-JWT-orange?style=for-the-badge&logo=jsonwebtokens" />
+  <img src="https://img.shields.io/badge/Docs-PDF%20Generation-red?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Design-Workflow%20Engine-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Project-Advanced%20Backend%20System-blue?style=for-the-badge" />
+</p>
 
 ---
 
 ## ⚙️ System Overview
 
-PaperPulse is a **controller-orchestrated academic publishing system** that manages the complete lifecycle of research papers using strict workflow enforcement, role-based access control, and state transitions.
+PaperPulse is a **workflow-driven academic publishing system** that manages the complete lifecycle of research papers using strict state transitions, role-based access control, and controller-level orchestration.
 
-Unlike CRUD systems, PaperPulse enforces **deterministic workflow progression** across submission → review → decision → payment → publication → certification.
+Unlike basic CRUD systems, it enforces a deterministic workflow:
+
+> **Submission → Review → Decision → Payment → Publication → Certification**
 
 ---
 
@@ -29,33 +32,37 @@ Unlike CRUD systems, PaperPulse enforces **deterministic workflow progression** 
 
 ### 🔷 High-Level System Architecture
 
-![alt text](image.png)
+![System Architecture](imgs/image.png)
+
+This shows the interaction between frontend, API layer, business logic, and persistence.
 
 ---
 
 ### 🔷 Backend Execution Flow
 
-![alt text](image-2.png)
+![Backend Flow](imgs/image-2.png)
+
+Request lifecycle from routing → controller → model → database execution.
 
 ---
 
 ## 🔄 Workflow Engine (Core System)
 
-![alt text](image-1.png)
+![Workflow Engine](imgs/image-1.png)
 
 ### 📌 Enforcement Rules
 
-* All transitions validated in **controller layer**
-* Role-based restrictions applied at each stage
-* No direct DB-driven workflow logic
-* Audit logging triggered at every transition
+* All transitions validated in controller layer
+* Role-based restrictions enforced per state
+* No workflow logic inside database
+* Audit logs generated on every transition
 
 ---
 
 ## 👥 Role System
 
-| Role         | Responsibilities                                             |
-| ------------ | ------------------------------------------------------------ |
+| Role           | Responsibilities                                             |
+| -------------- | ------------------------------------------------------------ |
 | 👨‍🎓 Author   | Submit papers, track status, pay fees, download certificates |
 | 🧑‍🔬 Reviewer | Review assigned papers, submit recommendations               |
 | 🧑‍💼 Admin    | Assign reviewers, make decisions, publish papers             |
@@ -64,25 +71,62 @@ Unlike CRUD systems, PaperPulse enforces **deterministic workflow progression** 
 
 ## ✨ Features
 
-* 🔁 Strict workflow/state machine enforcement
-* 👥 Role-Based Access Control (RBAC)
-* 📄 Multi-author paper submission system
-* 🔍 Reviewer assignment + review tracking
-* ⚖️ Admin decision engine (accept/reject/publish)
-* 💳 Payment gating before publication
-* 📜 Auto-generated PDF certificates
-* 📊 Audit logging for all system actions
+* Strict workflow/state machine enforcement
+* Role-Based Access Control (RBAC)
+* Multi-author paper submission
+* Reviewer assignment + tracking
+* Admin decision system
+* Payment gating before publication
+* PDF certificate generation
+* Full audit logging
+
+---
+
+## 🔍 What This System Actually Implements
+
+### 📄 End-to-End Paper Lifecycle
+
+- Paper submission with PDF upload and co-author validation  
+- Automatic transition from `submitted → under_review` on reviewer assignment  
+- Reviewer-based evaluation with accept/reject recommendations  
+- Admin-controlled final decision system  
+- Payment-gated publishing mechanism  
+- Certificate generation triggered after publication  
+
+---
+
+### 🔄 Workflow Enforcement (State Machine)
+
+- Controlled transitions:
+  `submitted → under_review → accepted/rejected → published`
+
+- Enforced constraints:
+  - Cannot assign reviewers after decision  
+  - Cannot submit decision without reviews  
+  - Cannot publish without successful payment  
+  - Reviewers restricted to one review per paper  
+
+---
+
+### 🔐 Access Control & Ownership Enforcement
+
+- JWT-based authentication (7-day expiry)  
+- Role-based access: author, reviewer, admin  
+- Strict ownership validation:
+  - Authors → only their papers  
+  - Reviewers → only assigned papers  
+  - Certificate access restricted to valid participants  
 
 ---
 
 ## 🧠 System Design Highlights
 
-* Controller-driven business logic (centralized orchestration)
-* Finite State Machine (FSM) workflow enforcement
-* Transaction-safe operations for critical flows
-* Relational integrity via PostgreSQL
-* Audit-first architecture for traceability
-* Modular monolithic backend design
+* Controller-driven orchestration
+* Finite State Machine (FSM) enforcement
+* Transaction-safe operations
+* PostgreSQL for relational integrity
+* Audit-first design for traceability
+* Modular monolith architecture
 
 ---
 
@@ -90,27 +134,43 @@ Unlike CRUD systems, PaperPulse enforces **deterministic workflow progression** 
 
 ### Backend Modules
 
-* Auth Module → JWT authentication + RBAC
-* Paper Module → Submission + lifecycle tracking
-* Review Module → Reviewer workflow
-* Decision Module → Admin control engine
-* Payment Module → Publication gate system
-* Certificate Module → PDF generation pipeline
-* Audit Module → System tracking layer
+* Auth → JWT authentication + RBAC
+* Paper → Submission + lifecycle
+* Review → Reviewer workflow
+* Decision → Admin control
+* Payment → Publication gate
+* Certificate → PDF generation
+* Audit → System tracking
 
 ---
 
 ## 🔌 API Flow Design
 
-![alt text](image-3.png)
+![API Flow](imgs/image-3.png)
 
-### Example Flow
+### Example API
 
-```text
+```http
 POST /api/papers/submit
-→ paper.controller.submitPaper()
-→ paper.model.createPaper()
-→ INSERT INTO papers
+```
+
+**Request**
+
+```json
+{
+  "title": "AI in Agriculture",
+  "abstract": "Study on crop prediction models",
+  "authors": ["Tanvi Argade"]
+}
+```
+
+**Response**
+
+```json
+{
+  "paperId": "123",
+  "status": "SUBMITTED"
+}
 ```
 
 ---
@@ -119,37 +179,37 @@ POST /api/papers/submit
 
 ### Core Tables
 
-* users → identity + RBAC
-* papers → workflow entity
-* paper_authors → multi-author mapping
-* reviews → peer evaluation system
-* reviewer_assignments → assignment tracking
-* payments → publication gate
-* notifications → user alerts
-* audit_logs → system traceability
+* users
+* papers
+* paper_authors
+* reviews
+* reviewer_assignments
+* payments
+* notifications
+* audit_logs
 
-### Design Principle
+### Principle
 
-> PostgreSQL is used strictly as a **persistent state store**, not a workflow engine.
+> PostgreSQL is used strictly as a persistence layer, not a workflow engine.
 
 ---
 
 ## 🔐 Security Model
 
-* JWT-based authentication
-* Role-based route protection middleware
-* Ownership validation (author-paper binding)
-* Reviewer isolation enforcement
-* Secure certificate access control
+* JWT authentication
+* Role-based route protection
+* Ownership validation
+* Reviewer isolation
+* Secure certificate access
 
 ---
 
 ## 📜 Certificate System
 
 * Triggered after publication
-* Server-side PDF generation (PDFKit)
-* Stored in secure file system
-* Protected download endpoint with authorization checks
+* Generated using PDFKit
+* Stored locally
+* Protected download endpoint
 
 ---
 
@@ -157,75 +217,103 @@ POST /api/papers/submit
 
 Tracks:
 
-* Paper submission
-* Reviewer assignment
-* Review submission
-* Decision updates
-* Payment events
-* Publication actions
+* submissions
+* reviews
+* decisions
+* payments
+* publication
 
-📌 Purpose:
+Purpose:
 
-* System traceability
-* Debugging workflow state
-* Administrative transparency
+* traceability
+* debugging
+* admin visibility
 
 ---
 
 ## ⚖️ Engineering Trade-offs
 
-| Decision       | Choice           | Reason                              |
-| -------------- | ---------------- | ----------------------------------- |
-| Architecture   | Modular Monolith | Strong transactional consistency    |
-| Workflow Logic | Controller Layer | Full control over state transitions |
-| Database Role  | Persistence only | Avoid hidden business logic         |
-| File Storage   | Local            | Simplicity over cloud complexity    |
+| Decision      | Choice           | Reason             |
+| ------------- | ---------------- | ------------------ |
+| Architecture  | Modular Monolith | Strong consistency |
+| Workflow      | Controller Layer | Explicit control   |
+| Database Role | Persistence only | Avoid hidden logic |
+| Storage       | Local files      | Simplicity         |
 
 ---
 
 ## 🚀 Tech Stack
 
-* **Backend**: Node.js, Express.js
-* **Frontend**: React.js
-* **Database**: PostgreSQL
-* **Auth**: JWT + bcrypt
-* **File Handling**: PDFKit + local storage
-* **Architecture**: Workflow-driven Modular Monolith
+* Backend: Node.js, Express.js
+* Frontend: React.js
+* Database: PostgreSQL
+* Auth: JWT + bcrypt
+* File Handling: PDFKit
 
 ---
 
-## 📌 System Classification
+## 🛠️ Setup & Installation
 
-> PaperPulse is a **controller-orchestrated workflow engine built over a relational database with strict state-machine enforcement and role-based execution control.**
+```bash
+git clone https://github.com/tanviargade/paperpulse.git
+cd paperpulse
+npm install
+```
+
+### Environment Variables
+
+Create `.env` file:
+
+```env
+PORT=5000
+DB_URL=postgresql://username:password@localhost:5432/paperpulse
+JWT_SECRET=your_secret_key
+```
+
+### Run Backend
+
+```bash
+npm run dev
+```
 
 ---
 
-## 📈 Key Takeaways
+## 📁 Project Structure
 
-* Real-world workflow orchestration system
-* Strong backend architecture design
-* State-machine enforced lifecycle management
-* Role-restricted system execution
-* Audit-driven backend design
+```
+backend/
+  controllers/
+  models/
+  routes/
+  middleware/
+
+frontend/
+  src/
+    components/
+    pages/
+
+imgs/
+  (all architecture diagrams)
+```
 
 ---
 
-## 📸 Optional UI Preview
+## 📸 UI Preview
 
-![alt text](image-4.png)
-
-![alt text](image-5.png)
-
-![alt text](image-6.png)
+![UI 1](imgs/image-4.png)
+![UI 2](imgs/image-5.png)
+![UI 3](imgs/image-6.png)
 
 ---
 
 ## 🧠 Final Summary
 
-PaperPulse demonstrates production-grade backend engineering principles including:
+PaperPulse demonstrates:
 
-* Workflow engine design
-* State transition enforcement
-* Role-based system architecture
+* Workflow-driven backend design
+* State-machine enforced lifecycle
+* Role-based execution control
 * Transaction-safe operations
-* Audit-first system design
+* Audit-driven system architecture
+
+---
